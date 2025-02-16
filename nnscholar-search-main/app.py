@@ -482,34 +482,52 @@ def call_deepseek_api(prompt):
     else:
         logger.error("DeepSeek API密钥未设置")
         
-    headers = {
-        'Authorization': f'Bearer {DEEPSEEK_API_KEY}',
-        'Content-Type': 'application/json'
+    url = "https://api.siliconflow.cn/v1/chat/completions"
+    
+    payload = {
+        "model": "deepseek-ai/DeepSeek-V2.5",
+        "messages": [
+            {
+                "role": "system",
+                "content": EXPERT_PROMPT
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        "stream": False,
+        "max_tokens": 512,
+        "temperature": 0.7
     }
     
-    data = {
-        'model': 'deepseek-chat',
-        'messages': [
-            {'role': 'system', 'content': EXPERT_PROMPT},
-            {'role': 'user', 'content': prompt}
-        ]
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {DEEPSEEK_API_KEY.strip()}"
     }
     
     try:
-        response = requests.post(
-            'https://api.deepseek.com/v1/chat/completions',
-            headers=headers,
-            json=data
-        )
+        # 记录请求信息
+        logger.debug(f"API请求URL: {url}")
+        logger.debug(f"请求头: {json.dumps(headers, ensure_ascii=False)}")
+        logger.debug(f"请求数据: {json.dumps(payload, ensure_ascii=False)}")
+        
+        # 发送请求
+        response = requests.post(url, json=payload, headers=headers)
+        response.encoding = 'utf-8'  # 设置响应编码
         
         # 检查HTTP状态码
-        response.raise_for_status()
+        if response.status_code != 200:
+            logger.error(f"API错误状态码: {response.status_code}")
+            logger.error(f"错误响应: {response.text}")
+            response.raise_for_status()
         
         # 解析JSON响应
         response_data = response.json()
         
         # 记录完整响应用于调试
-        logger.debug(f"DeepSeek API响应: {response_data}")
+        logger.debug(f"DeepSeek API响应: {json.dumps(response_data, ensure_ascii=False)}")
         
         # 验证响应格式
         if 'choices' not in response_data:
@@ -517,7 +535,9 @@ def call_deepseek_api(prompt):
             logger.error(f"DeepSeek API返回格式错误: {error_msg}")
             raise ValueError(f"DeepSeek API错误: {error_msg}")
             
-        return response_data['choices'][0]['message']['content']
+        content = response_data['choices'][0]['message']['content']
+        logger.info(f"API响应内容: {content[:200]}...")  # 只记录前200个字符
+        return content
         
     except requests.exceptions.RequestException as e:
         logger.error(f"调用DeepSeek API时发生网络错误: {str(e)}")
@@ -527,6 +547,90 @@ def call_deepseek_api(prompt):
         raise
     except Exception as e:
         logger.error(f"调用DeepSeek API时发生未预期的错误: {str(e)}")
+        raise
+
+def call_deepseek_api_stream(prompt):
+    """使用流式模式调用DeepSeek API"""
+    if DEEPSEEK_API_KEY:
+        logger.info(f"DeepSeek API密钥前三位: {DEEPSEEK_API_KEY[:3]}...")
+    else:
+        logger.error("DeepSeek API密钥未设置")
+        raise ValueError("DeepSeek API密钥未设置")
+        
+    url = "https://api.siliconflow.cn/v1/chat/completions"
+    
+    payload = {
+        "model": "deepseek-ai/DeepSeek-V2.5",
+        "messages": [
+            {
+                "role": "system",
+                "content": EXPERT_PROMPT
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        "stream": True,
+        "max_tokens": 512,
+        "temperature": 0.7
+    }
+    
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "authorization": f"Bearer {DEEPSEEK_API_KEY.strip()}"
+    }
+    
+    try:
+        # 记录请求信息
+        logger.debug(f"API流式请求URL: {url}")
+        logger.debug(f"请求头: {json.dumps(headers, ensure_ascii=False)}")
+        logger.debug(f"请求数据: {json.dumps(payload, ensure_ascii=False)}")
+        
+        # 发送请求
+        response = requests.post(url, json=payload, headers=headers, stream=True)
+        
+        if response.status_code != 200:
+            logger.error(f"API错误状态码: {response.status_code}")
+            logger.error(f"错误响应: {response.text}")
+            response.raise_for_status()
+            
+        # 处理流式响应
+        buffer = ""
+        for line in response.iter_lines():
+            if line:
+                try:
+                    # 解码为 UTF-8
+                    line = line.decode('utf-8')
+                    # 移除 "data: " 前缀
+                    if line.startswith("data: "):
+                        line = line[6:]
+                    # 跳过心跳消息
+                    if line == "[DONE]":
+                        continue
+                    # 解析 JSON 数据
+                    chunk_data = json.loads(line)
+                    # 获取内容
+                    if chunk_data["choices"][0]["delta"].get("content"):
+                        content = chunk_data["choices"][0]["delta"]["content"]
+                        buffer += content
+                        yield content
+                except UnicodeDecodeError:
+                    logger.warning("解码错误，跳过此块")
+                    continue
+                except json.JSONDecodeError:
+                    continue
+                except KeyError:
+                    continue
+                
+        logger.info(f"完整响应内容: {buffer[:200]}...")  # 只记录前200个字符
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"调用DeepSeek API流式接口时发生网络错误: {str(e)}")
+        raise
+    except Exception as e:
+        logger.error(f"调用DeepSeek API流式接口时发生未预期的错误: {str(e)}")
         raise
 
 def parse_pubmed_xml(xml_content):
