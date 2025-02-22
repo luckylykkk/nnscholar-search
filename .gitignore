@@ -1,0 +1,29 @@
+# 虚拟环境
+.venv/
+env/
+exports/
+.specstory/history/
+
+data/*
+.pytest_cache/
+.github/
+
+# Python缓存文件
+__pycache__/
+*.py[cod]
+
+# 环境变量文件
+.env
+swagger.json
+# 日志文件
+logs/
+*.log
+
+# IDE配置文件
+.vscode/
+.idea/
+./test.py
+# 数据文件
+data/journal_metrics/*.csv 
+OpenAPI Specification.json
+OpenAPI Specification.yaml

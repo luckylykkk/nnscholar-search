@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>论文领域验证</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 800px; margin-top: 50px; }
+        .result-section { margin-top: 30px; }
+        .loading { display: none; }
+        .validation-log {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+            background: #f8f9fa;
+        }
+        .log-item {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .log-item.valid {
+            color: #198754;
+        }
+        .log-item.invalid {
+            color: #dc3545;
+        }
+        .log-item.warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">论文领域验证</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form id="validateForm">
+                    <div class="mb-3">
+                        <label class="form-label">选择CSV文件</label>
+                        <select class="form-select mb-3" id="fileSource">
+                            <option value="upload">上传新文件</option>
+                            <option value="exports">从exports目录选择</option>
+                        </select>
+                        
+                        <div id="uploadSection">
+                            <input type="file" class="form-control" id="csvFile" accept=".csv">
+                        </div>
+                        
+                        <div id="exportsSection" style="display:none">
+                            <select class="form-select" id="existingFiles">
+                                <option value="">请选择文件...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">目标领域</label>
+                        <input type="text" class="form-control" id="domain" placeholder="例如：机器学习、深度学习等">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="threadCount">线程数量</label>
+                        <input type="number" class="form-control" id="threadCount" name="threadCount" value="5" min="1" max="10">
+                        <small class="form-text text-muted">设置并行处理的线程数量（1-10）</small>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary" id="startBtn">开始验证</button>
+                        <button type="button" class="btn btn-danger" id="stopBtn" style="display: none;">终止验证</button>
+                        <button type="button" class="btn btn-success" id="continueBtn" style="display: none;">继续验证</button>
+                        <button type="button" class="btn btn-secondary" id="clearBtn" style="display: none;">清空结果</button>
+                    </div>
+                </form>
+                
+                <div class="progress mt-4" style="display: none;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+                
+                <div class="validation-log" style="display: none;">
+                    <!-- 验证日志将在这里动态添加 -->
+                </div>
+                
+                <div class="result-section" style="display: none;">
+                    <h4>验证结果</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">符合条件的论文</h5>
+                                    <p class="card-text" id="validCount">0篇</p>
+                                    <div class="download-buttons">
+                                        <a href="#" class="btn btn-success" id="downloadValid" style="display: none;">下载符合条件的论文</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">不符合条件的论文</h5>
+                                    <p class="card-text" id="invalidCount">0篇</p>
+                                    <div class="download-buttons">
+                                        <a href="#" class="btn btn-danger" id="downloadInvalid" style="display: none;">下载不符合条件的论文</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        let currentSource = null;  // 保存当前的 EventSource 实例
+        let isProcessing = false;  // 标记是否正在处理
+        let lastProcessedRow = 0;  // 记录上次处理到的行数
+        
+        $(document).ready(function() {
+            $('#fileSource').change(function() {
+                if ($(this).val() === 'exports') {
+                    $('#uploadSection').hide();
+                    $('#exportsSection').show();
+                    // 获取文件列表
+                    $.get('/api/list-exports', function(data) {
+                        $('#existingFiles').empty().append('<option value="">请选择文件...</option>');
+                        data.files.forEach(function(file) {
+                            if (file.endsWith('.csv')) {
+                                $('#existingFiles').append(`<option value="${file}">${file}</option>`);
+                            }
+                        });
+                    });
+                } else {
+                    $('#uploadSection').show();
+                    $('#exportsSection').hide();
+                }
+            });
+
+            // 终止按钮点击事件
+            $('#stopBtn').click(function() {
+                if (currentSource) {
+                    currentSource.close();
+                    currentSource = null;
+                }
+                isProcessing = false;
+                
+                // 更新UI
+                $('#startBtn').hide();
+                $('#stopBtn').hide();
+                $('#continueBtn').show();
+                $('#clearBtn').show();
+                $('.progress-bar').addClass('bg-warning');
+                
+                // 添加终止日志
+                const logItem = $('<div>')
+                    .addClass('log-item warning')
+                    .text('验证已终止，以上是已处理的内容。点击"继续验证"可以从当前位置继续处理。');
+                $('.validation-log').append(logItem)
+                    .scrollTop($('.validation-log')[0].scrollHeight);
+            });
+
+            // 继续验证按钮点击事件
+            $('#continueBtn').click(function() {
+                const domain = $('#domain').val();
+                const fileSource = $('#fileSource').val();
+                let filename = fileSource === 'upload' ? $('#csvFile')[0].files[0].name : $('#existingFiles').val();
+                
+                // 更新UI
+                $('#continueBtn').hide();
+                $('#clearBtn').hide();
+                $('#stopBtn').show();
+                $('.progress-bar').removeClass('bg-warning');
+                isProcessing = true;
+                
+                // 清空之前的验证日志
+                $('.validation-log').empty();
+                
+                // 添加继续验证的提示
+                const continueMsg = $('<div>')
+                    .addClass('log-item')
+                    .text(`从第 ${lastProcessedRow} 行继续验证...`);
+                $('.validation-log').append(continueMsg);
+                
+                // 确保验证日志区域可见
+                $('.validation-log').show();
+                $('.progress').show();
+                
+                // 开始验证
+                startEventStream(domain, filename, lastProcessedRow);
+            });
+
+            // 清空结果按钮点击事件
+            $('#clearBtn').click(function() {
+                resetUI(true);
+            });
+
+            $('#validateForm').submit(function(e) {
+                e.preventDefault();
+                
+                if (isProcessing) {
+                    return;
+                }
+                
+                const domain = $('#domain').val();
+                const fileSource = $('#fileSource').val();
+                
+                if (!domain) {
+                    alert('请输入目标领域');
+                    return;
+                }
+                
+                // 检查文件选择
+                let filename = '';
+                if (fileSource === 'upload') {
+                    const file = $('#csvFile')[0].files[0];
+                    if (!file) {
+                        alert('请选择CSV文件');
+                        return;
+                    }
+                } else {
+                    filename = $('#existingFiles').val();
+                    if (!filename) {
+                        alert('请选择文件');
+                        return;
+                    }
+                }
+                
+                // 重置界面
+                resetUI(true);
+                
+                // 更新按钮状态
+                $('#startBtn').hide();
+                $('#stopBtn').show();
+                isProcessing = true;
+                lastProcessedRow = 0;  // 重置处理行数
+                
+                // 如果是上传文件，先上传文件
+                if (fileSource === 'upload') {
+                    const formData = new FormData();
+                    formData.append('file', $('#csvFile')[0].files[0]);
+                    formData.append('domain', domain);
+                    
+                    // 发送POST请求上传文件
+                    $.ajax({
+                        url: '/api/validate',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            // 文件上传成功后，开始SSE连接
+                            startEventStream(domain, $('#csvFile')[0].files[0].name);
+                        },
+                        error: function(xhr) {
+                            alert('文件上传失败：' + (xhr.responseJSON?.message || '未知错误'));
+                            resetUI();
+                        }
+                    });
+                } else {
+                    // 直接开始SSE连接
+                    startEventStream(domain, filename);
+                }
+            });
+            
+            function startEventStream(domain, filename, startRow = 0) {
+                const threadCount = $('#threadCount').val();  // 获取线程数量
+                
+                if (!domain || !filename) {
+                    alert('请选择文件并输入目标领域');
+                    return;
+                }
+                
+                // 显示进度条和日志区域
+                $('.progress').show();
+                $('.validation-log').show().empty();
+                
+                // 添加开始验证的消息
+                const startMsg = $('<div>')
+                    .addClass('log-item')
+                    .text(`开始验证，使用 ${threadCount} 个线程处理...`);
+                $('.validation-log').append(startMsg);
+                
+                if (startRow > 0) {
+                    const continueMsg = $('<div>')
+                        .addClass('log-item')
+                        .text(`从第 ${startRow} 行继续验证...`);
+                    $('.validation-log').append(continueMsg);
+                }
+                
+                // 更新按钮状态
+                $('#startBtn').hide();
+                $('#stopBtn').show();
+                $('#continueBtn').hide();
+                $('#clearBtn').hide();
+                
+                // 创建EventSource
+                const url = `/api/validate?domain=${encodeURIComponent(domain)}&filename=${encodeURIComponent(filename)}&start_row=${startRow}&thread_count=${threadCount}`;
+                currentSource = new EventSource(url);
+                
+                // 处理消息
+                currentSource.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.status === 'processing') {
+                        // 更新进度条
+                        $('.progress-bar').css('width', data.progress + '%');
+                        
+                        // 添加验证日志
+                        const logItem = $('<div>')
+                            .addClass('log-item')
+                            .addClass(data.current.is_valid ? 'valid' : 'invalid')
+                            .text(`${data.current.title} - ${data.current.result}`);
+                        
+                        $('.validation-log').append(logItem)
+                            .scrollTop($('.validation-log')[0].scrollHeight);
+                            
+                        // 更新处理行数
+                        lastProcessedRow = data.current.row;
+                            
+                    } else if (data.status === 'complete') {
+                        // 显示最终结果
+                        $('#validCount').text(data.results.valid_count + '篇');
+                        $('#invalidCount').text(data.results.invalid_count + '篇');
+                        
+                        // 设置下载链接
+                        if (data.results.valid_file) {
+                            const validFileName = data.results.valid_file.split(/[\/\\]/).pop();
+                            $('#downloadValid')
+                                .attr('href', '/download/' + encodeURIComponent(validFileName))
+                                .show();
+                        } else {
+                            $('#downloadValid').hide();
+                        }
+                        
+                        if (data.results.invalid_file) {
+                            const invalidFileName = data.results.invalid_file.split(/[\/\\]/).pop();
+                            $('#downloadInvalid')
+                                .attr('href', '/download/' + encodeURIComponent(invalidFileName))
+                                .show();
+                        } else {
+                            $('#downloadInvalid').hide();
+                        }
+                        
+                        $('.result-section').show();
+                        resetUI();
+                        
+                        // 添加完成日志
+                        const logItem = $('<div>')
+                            .addClass('log-item')
+                            .addClass('text-success')
+                            .text('验证完成！');
+                        $('.validation-log').append(logItem)
+                            .scrollTop($('.validation-log')[0].scrollHeight);
+                        
+                    } else if (data.status === 'error') {
+                        alert(data.message);
+                        resetUI();
+                    }
+                };
+                
+                // 处理错误
+                currentSource.onerror = function() {
+                    alert('连接错误，请刷新页面重试');
+                    resetUI();
+                };
+            }
+            
+            function resetUI(clearAll = false) {
+                // 重置UI状态
+                if (currentSource) {
+                    currentSource.close();
+                    currentSource = null;
+                }
+                isProcessing = false;
+                
+                if (clearAll) {
+                    // 完全重置
+                    $('.progress').show().find('.progress-bar').css('width', '0%').removeClass('bg-warning');
+                    $('.validation-log').empty().show();
+                    $('.result-section').hide();
+                    lastProcessedRow = 0;
+                    $('#validCount').text('0篇');
+                    $('#invalidCount').text('0篇');
+                    $('#downloadValid, #downloadInvalid').hide();
+                }
+                
+                // 重置按钮状态
+                $('#startBtn').show();
+                $('#stopBtn').hide();
+                $('#continueBtn').hide();
+                $('#clearBtn').hide();
+            }
+        });
+    </script>
+</body>
+</html>
