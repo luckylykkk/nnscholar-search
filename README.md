@@ -54,10 +54,7 @@
 ## 安装
 
 1. 克隆仓库：
-```bash
-git clone https://github.com/yourusername/nnscholar-search.git
-cd nnscholar-search
-```
+请直接下载这个分支，并解压
 
 2. 创建并激活虚拟环境：
 ```bash
@@ -197,7 +194,7 @@ pytest tests/test_arxiv_client.py -v --log-cli-level=DEBUG
    - 自动下载相关 PDF 文件
    - 保存下载记录以支持断点续传
 
-## 贡献
+
 
 欢迎提交 Issue 和 Pull Request。
 
