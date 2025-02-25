@@ -84,6 +84,8 @@ def get_api_config() -> Dict[str, str]:
     # 直接从环境变量中读取并打印所有相关变量
     env_vars = {
         'DEEPSEEK_API_KEY': os.getenv('DEEPSEEK_API_KEY'),
+        'DEEPSEEK_MODEL': os.getenv('DEEPSEEK_MODEL'),
+        'DEEPSEEK_API_URL': os.getenv('DEEPSEEK_API_URL'),
         'PUBMED_API_KEY': os.getenv('PUBMED_API_KEY'),
         'PUBMED_EMAIL': os.getenv('PUBMED_EMAIL'),
         'TOOL_NAME': os.getenv('TOOL_NAME'),
@@ -99,6 +101,8 @@ def get_api_config() -> Dict[str, str]:
     
     config = {
         'deepseek_key': env_vars['DEEPSEEK_API_KEY'],
+        'deepseek_model': env_vars['DEEPSEEK_MODEL'] or 'deepseek-chat',
+        'deepseek_url': env_vars['DEEPSEEK_API_URL'] or 'https://api.deepseek.com/v1/chat/completions',
         'pubmed_key': env_vars['PUBMED_API_KEY'],
         'pubmed_email': env_vars['PUBMED_EMAIL'],
         'tool_name': env_vars['TOOL_NAME'] or 'nnscholar_pubmed',
@@ -123,6 +127,8 @@ def get_api_config() -> Dict[str, str]:
 try:
     API_CONFIG = get_api_config()
     DEEPSEEK_API_KEY = API_CONFIG['deepseek_key']
+    DEEPSEEK_MODEL = API_CONFIG['deepseek_model']
+    DEEPSEEK_API_URL = API_CONFIG['deepseek_url']
     PUBMED_API_KEY = API_CONFIG['pubmed_key']
     PUBMED_EMAIL = API_CONFIG['pubmed_email']
     TOOL_NAME = API_CONFIG['tool_name']
@@ -488,7 +494,7 @@ def call_deepseek_api(prompt):
     }
     
     data = {
-        'model': 'deepseek-chat',
+        'model': DEEPSEEK_MODEL,
         'messages': [
             {'role': 'system', 'content': EXPERT_PROMPT},
             {'role': 'user', 'content': prompt}
@@ -496,8 +502,9 @@ def call_deepseek_api(prompt):
     }
     
     try:
+        logger.info(f"调用DeepSeek API，模型: {DEEPSEEK_MODEL}, URL: {DEEPSEEK_API_URL}")
         response = requests.post(
-            'https://api.deepseek.com/v1/chat/completions',
+            DEEPSEEK_API_URL,
             headers=headers,
             json=data
         )
@@ -1377,20 +1384,38 @@ def export_papers_to_word(papers, query, file_suffix=''):
         doc.add_heading('文献列表', level=1)
         
         for i, paper in enumerate(papers, 1):
+            # 获取期刊信息
+            journal_info = paper.get('journal_info', {})
+            
             # 添加文献标题
             p = doc.add_paragraph()
             p.add_run(f'{i}. ').bold = True
             title_run = p.add_run(paper.get('title', 'N/A'))
             title_run.bold = True
             
-            # 添加作者和期刊信息
-            doc.add_paragraph(f'作者：{paper.get("authors", "N/A")}')
-            doc.add_paragraph(f'期刊：{paper.get("journal", "N/A")}')
+            # 添加作者信息
+            authors_str = ', '.join(paper.get('authors', [])) if paper.get('authors') else 'N/A'
+            doc.add_paragraph(f'作者：{authors_str}')
+            
+            # 添加期刊信息
+            doc.add_paragraph(f'期刊：{journal_info.get("title", "N/A")}')
             doc.add_paragraph(f'发表时间：{paper.get("pub_date", "N/A")}')
+            
+            # 添加影响因子和分区信息
+            doc.add_paragraph(f'影响因子：{journal_info.get("impact_factor", "N/A")}')
+            doc.add_paragraph(f'JCR分区：{journal_info.get("jcr_quartile", "N/A")}')
+            doc.add_paragraph(f'CAS分区：{journal_info.get("cas_quartile", "N/A")}')
             
             # 添加DOI和PMID
             doc.add_paragraph(f'DOI：{paper.get("doi", "N/A")}')
             doc.add_paragraph(f'PMID：{paper.get("pmid", "N/A")}')
+            
+            # 添加相关度信息
+            relevance = paper.get('relevance', 0)
+            if isinstance(relevance, (int, float)):
+                doc.add_paragraph(f'相关度：{relevance:.1f}%')
+            else:
+                doc.add_paragraph(f'相关度：{relevance}')
             
             # 添加摘要
             if paper.get('abstract'):
@@ -1539,40 +1564,17 @@ def search():
                 # 执行PubMed搜索
                 papers, _, total_count, filtered_count = search_pubmed(search_strategy)
                 
-                # 导出初始检索结果的Excel和Word文件
-                initial_excel_path = export_papers_to_excel(papers, query, 'initial')
-                initial_word_path = export_papers_to_word(papers, query, 'initial')
-                
-                # 为初始检索结果生成分析文件
-                if initial_excel_path:
-                    from analyze_papers import analyze_papers
-                    initial_report_file, initial_text_file = analyze_papers(initial_excel_path)
-                    logger.info(f"初始检索分析完成，生成报告：{initial_report_file}，文献清单：{initial_text_file}")
-                
                 # 应用筛选条件
                 if filters:
                     papers, stats = filter_papers_by_metrics(papers, filters)
                     filtered_count = stats['final']
-                
-                # 导出筛选后的Excel和Word文件
-                filtered_excel_path = export_papers_to_excel(papers, query, 'filtered')
-                filtered_word_path = export_papers_to_word(papers, query, 'filtered')
-                
-                # 为筛选后的结果生成分析文件
-                if filtered_excel_path:
-                    from analyze_papers import analyze_papers
-                    filtered_report_file, filtered_text_file = analyze_papers(filtered_excel_path)
-                    logger.info(f"筛选后分析完成，生成报告：{filtered_report_file}，文献清单：{filtered_text_file}")
                 
                 return jsonify({
                     'success': True,
                     'data': papers,
                     'total_count': total_count,
                     'filtered_count': filtered_count,
-                    'initial_excel_file': os.path.basename(initial_excel_path) if initial_excel_path else None,
-                    'initial_word_file': os.path.basename(initial_word_path) if initial_word_path else None,
-                    'filtered_excel_file': os.path.basename(filtered_excel_path) if filtered_excel_path else None,
-                    'filtered_word_file': os.path.basename(filtered_word_path) if filtered_word_path else None
+                    'original_papers': papers  # 保存原始未筛选的文献，供导出时使用
                 })
             
     except Exception as e:
@@ -1913,6 +1915,79 @@ def analyze_journal():
         return jsonify({
             'success': False,
             'error': f'分析失败: {str(e)}'
+        }), 500
+
+@app.route('/api/export', methods=['POST'])
+def export_files():
+    """
+    处理文件导出请求
+    
+    请求体格式：
+    {
+        "query": "查询词",
+        "papers": [文献列表],
+        "export_type": "导出类型(initial_word/filtered_word/initial_excel/filtered_excel)",
+        "filters": {筛选条件}
+    }
+    
+    返回格式：
+    {
+        "success": true/false,
+        "file_name": "文件名",
+        "error": "错误信息"
+    }
+    """
+    try:
+        # 获取请求数据
+        data = request.get_json()
+        
+        # 验证数据有效性
+        if not data or not data.get('query') or not data.get('papers'):
+            return jsonify({
+                'success': False,
+                'error': '缺少必要参数'
+            }), 400
+        
+        query = data.get('query')
+        papers = data.get('papers')
+        export_type = data.get('export_type', 'initial_word')
+        filters = data.get('filters', {})
+        
+        # 确定导出类型和文件后缀
+        is_initial = 'initial' in export_type
+        is_word = 'word' in export_type
+        export_suffix = 'initial' if is_initial else 'filtered'
+        
+        # 如果需要过滤，则应用筛选条件
+        if not is_initial:
+            if isinstance(filters, dict) and filters:
+                papers, _ = filter_papers_by_metrics(papers, filters)
+        
+        # 根据类型导出文件
+        file_name = ""
+        if is_word:
+            file_path = export_papers_to_word(papers, query, export_suffix)
+            file_name = os.path.basename(file_path)
+        else:
+            file_path = export_papers_to_excel(papers, query, export_suffix)
+            file_name = os.path.basename(file_path)
+        
+        # 如果是筛选后的导出，生成分析报告
+        if not is_initial:
+            from analyze_papers import analyze_papers
+            analyze_papers(file_path)
+        
+        return jsonify({
+            'success': True,
+            'file_name': file_name
+        })
+    
+    except Exception as e:
+        logger.error(f"导出文件失败: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': f"导出失败: {str(e)}"
         }), 500
 
 if __name__ == '__main__':

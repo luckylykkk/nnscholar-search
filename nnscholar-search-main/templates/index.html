@@ -452,6 +452,44 @@
             font-weight: bold;
             color: #fff;
         }
+
+        /* 导出按钮样式 */
+        .export-btn {
+            position: relative;
+        }
+        
+        .export-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 250px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .export-dropdown.show {
+            display: block;
+        }
+        
+        .export-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .export-item:hover {
+            background-color: #f1f5ff;
+        }
+        
+        .export-item i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -540,6 +578,28 @@
                         <!-- 添加检索结果统计信息 -->
                         <div id="search-stats" style="display: none;" class="mt-4">
                             <div class="alert alert-info">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="m-0">检索统计</h6>
+                                    <div class="export-btn">
+                                        <button id="stats-export-btn" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-export me-1"></i>导出
+                                        </button>
+                                        <div id="stats-export-dropdown" class="export-dropdown">
+                                            <div class="export-item" data-type="initial_word">
+                                                <i class="fas fa-file-word"></i>初始检索报告文档
+                                            </div>
+                                            <div class="export-item" data-type="filtered_word">
+                                                <i class="fas fa-file-word"></i>筛选后检索报告文档
+                                            </div>
+                                            <div class="export-item" data-type="initial_excel">
+                                                <i class="fas fa-file-excel"></i>初始检索表格
+                                            </div>
+                                            <div class="export-item" data-type="filtered_excel">
+                                                <i class="fas fa-file-excel"></i>筛选后检索表格
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="d-flex flex-column gap-2">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>
@@ -734,14 +794,31 @@
         <p class="mt-3">正在检索中，请稍候...</p>
     </div>
     
-    <div id="results" class="card" style="display: none;">
-        <div class="card-body">
-            <h5 class="card-title">
-                <i class="fas fa-list-ul me-2"></i>
-                检索结果
-            </h5>
-            <div id="resultsList"></div>
+    <div id="results" class="mt-4" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="m-0">搜索结果</h5>
+            
+            <div class="export-btn">
+                <button id="export-btn" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-file-export me-1"></i>导出
+                </button>
+                <div id="export-dropdown" class="export-dropdown">
+                    <div class="export-item" data-type="initial_word">
+                        <i class="fas fa-file-word"></i>初始检索报告文档
+                    </div>
+                    <div class="export-item" data-type="filtered_word">
+                        <i class="fas fa-file-word"></i>筛选后检索报告文档
+                    </div>
+                    <div class="export-item" data-type="initial_excel">
+                        <i class="fas fa-file-excel"></i>初始检索表格
+                    </div>
+                    <div class="export-item" data-type="filtered_excel">
+                        <i class="fas fa-file-excel"></i>筛选后检索表格
+                    </div>
+                </div>
+            </div>
         </div>
+        <div id="resultsList"></div>
     </div>
 
     <!-- 添加页脚 -->
@@ -756,6 +833,9 @@
     <script>
         let currentSearchStrategy = '';
         let currentFilters = {};
+        let currentQuery = '';
+        let currentPapers = [];
+        let originalPapers = [];
 
         function showToast(message, type = 'info') {
             const toastContainer = document.querySelector('.toast-container');
@@ -968,8 +1048,11 @@
             // 更新筛选条件
             updateFilters();
 
+            // 更新全局变量
+            currentQuery = query;
+
             // 显示加载状态
-            showLoading('正在执行文献检索并生成导出文件...');
+            showLoading('正在执行文献检索...');
 
             // 发送执行检索请求
             fetch('/api/search', {
@@ -984,18 +1067,43 @@
                     generate_only: false,
                     execute_search: true,
                     year_start: yearStart || null,
-                    year_end: yearEnd || null,
-                    export_files: true  // 添加导出文件标志
+                    year_end: yearEnd || null
                 })
             })
             .then(response => handleFetchError(response))
             .then(data => {
                 hideLoading();
                 if (data.success) {
+                    // 更新全局变量
+                    currentPapers = data.data;
+                    originalPapers = data.original_papers || data.data;
+                    
                     // 更新检索统计信息
                     const searchStats = document.getElementById('search-stats');
                     searchStats.innerHTML = `
                         <div class="alert alert-info">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="m-0">检索统计</h6>
+                                <div class="export-btn">
+                                    <button id="stats-export-btn" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-file-export me-1"></i>导出
+                                    </button>
+                                    <div id="stats-export-dropdown" class="export-dropdown">
+                                        <div class="export-item" data-type="initial_word">
+                                            <i class="fas fa-file-word"></i>初始检索报告文档
+                                        </div>
+                                        <div class="export-item" data-type="filtered_word">
+                                            <i class="fas fa-file-word"></i>筛选后检索报告文档
+                                        </div>
+                                        <div class="export-item" data-type="initial_excel">
+                                            <i class="fas fa-file-excel"></i>初始检索表格
+                                        </div>
+                                        <div class="export-item" data-type="filtered_excel">
+                                            <i class="fas fa-file-excel"></i>筛选后检索表格
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="d-flex flex-column gap-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span>
@@ -1025,37 +1133,9 @@
                         </div>
                     `;
                     searchStats.style.display = 'block';
-
-                    // 如果有导出文件，自动下载
-                    if (data.export_files) {
-                        // 添加导出文件信息到统计区域
-                        const exportInfo = `
-                            <div class="alert alert-success mt-3">
-                                <h6 class="mb-2">
-                                    <i class="fas fa-file-export me-2"></i>导出文件已自动下载：
-                                </h6>
-                                <div class="ms-3">
-                                    <p class="mb-1">
-                                        <i class="fas fa-check-circle me-2 text-success"></i>Excel文件
-                                    </p>
-                                    <p class="mb-1">
-                                        <i class="fas fa-check-circle me-2 text-success"></i>Word文件
-                                    </p>
-                                </div>
-                            </div>
-                        `;
-                        searchStats.insertAdjacentHTML('beforeend', exportInfo);
-
-                        // 自动下载文件
-                        if (data.excel_file) {
-                            window.open(`/exports/${data.excel_file}`, '_blank');
-                        }
-                        if (data.word_file) {
-                            setTimeout(() => {
-                                window.open(`/exports/${data.word_file}`, '_blank');
-                            }, 1000); // 延迟1秒下载第二个文件，避免浏览器阻止
-                        }
-                    }
+                    
+                    // 为新添加的导出按钮添加事件监听
+                    initializeStatsExportButton();
 
                     // 显示搜索结果
                     displayResults(data.data);
@@ -1063,7 +1143,7 @@
                     // 保存当前检索策略
                     currentSearchStrategy = searchStrategy;
                     
-                    showToast(`检索完成，共找到 ${data.filtered_count || 0} 篇相关文献，文件已自动下载`, 'success');
+                    showToast(`检索完成，共找到 ${data.filtered_count || 0} 篇相关文献`, 'success');
                 } else {
                     showToast(data.error || '检索失败', 'error');
                 }
@@ -1074,6 +1154,80 @@
                 console.error('Error:', error);
             });
         });
+
+        // 添加初始化统计区域导出按钮的函数
+        function initializeStatsExportButton() {
+            const exportBtn = document.getElementById('stats-export-btn');
+            const exportDropdown = document.getElementById('stats-export-dropdown');
+            
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    exportDropdown.classList.toggle('show');
+                });
+                
+                // 点击其他区域关闭下拉菜单
+                document.addEventListener('click', function() {
+                    exportDropdown.classList.remove('show');
+                });
+                
+                // 防止点击下拉菜单本身关闭
+                exportDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                
+                // 为每个导出选项添加点击事件
+                exportDropdown.querySelectorAll('.export-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const exportType = this.getAttribute('data-type');
+                        exportPapers(exportType);
+                        exportDropdown.classList.remove('show');
+                    });
+                });
+            }
+        }
+
+        // 初始化导出功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化搜索结果区域的导出按钮
+            initializeExportButton();
+            
+            // 初始化统计区域的导出按钮
+            initializeStatsExportButton();
+        });
+
+        // 修改原有的导出按钮初始化函数
+        function initializeExportButton() {
+            // 导出按钮点击事件
+            const exportBtn = document.getElementById('export-btn');
+            const exportDropdown = document.getElementById('export-dropdown');
+            
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    exportDropdown.classList.toggle('show');
+                });
+                
+                // 点击其他区域关闭下拉菜单
+                document.addEventListener('click', function() {
+                    exportDropdown.classList.remove('show');
+                });
+                
+                // 防止点击下拉菜单本身关闭
+                exportDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                
+                // 为每个导出选项添加点击事件
+                exportDropdown.querySelectorAll('.export-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const exportType = this.getAttribute('data-type');
+                        exportPapers(exportType);
+                        exportDropdown.classList.remove('show');
+                    });
+                });
+            }
+        }
 
         // 添加错误处理函数
         function handleFetchError(response) {
@@ -1538,6 +1692,49 @@
             // 隐藏检索策略相关元素
             document.getElementById('search-strategy-container').style.display = 'none';
             document.getElementById('search-stats').style.display = 'none';
+        }
+
+        // 导出文件函数
+        function exportPapers(exportType) {
+            if (!currentQuery || (!currentPapers.length && !originalPapers.length)) {
+                showToast('没有可导出的文献数据', 'warning');
+                return;
+            }
+            
+            showLoading('正在导出文献...');
+            
+            // 确定使用哪组文献数据
+            const papersToExport = exportType.includes('initial') ? originalPapers : currentPapers;
+            
+            // 发送导出请求
+            fetch('/api/export', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query: currentQuery,
+                    papers: papersToExport,
+                    export_type: exportType,
+                    filters: currentFilters
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    showToast('文件导出成功', 'success');
+                    // 打开下载链接
+                    window.open(`/exports/${data.file_name}`, '_blank');
+                } else {
+                    showToast(`导出失败: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showToast(`导出失败: ${error.message}`, 'error');
+                console.error('导出错误:', error);
+            });
         }
     </script>
 </body>
