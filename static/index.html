@@ -1,0 +1,48 @@
+<div class="container">
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">论文分析</h5>
+                    <p class="card-text">分析已导出的论文数据，生成分析报告。</p>
+                    <button id="analyzeBtn" class="btn btn-primary" onclick="analyzePapers()">
+                        <i class="fas fa-chart-bar"></i> 分析论文
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分析结果模态框 -->
+    <div class="modal fade" id="analysisModal" tabindex="-1" aria-labelledby="analysisModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="analysisModalLabel">论文分析报告</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" id="analysisTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#report" type="button" role="tab">分析报告</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button" role="tab">文献清单</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-3" id="analysisTabContent">
+                        <div class="tab-pane fade show active" id="report" role="tabpanel">
+                            <pre id="reportContent" style="white-space: pre-wrap;"></pre>
+                        </div>
+                        <div class="tab-pane fade" id="list" role="tabpanel">
+                            <pre id="listContent" style="white-space: pre-wrap;"></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

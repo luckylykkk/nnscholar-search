@@ -1,0 +1,15 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r requirements.txt && python -c 'import nltk; nltk.download(\"punkt\"); nltk.download(\"stopwords\"); nltk.download(\"wordnet\")'"
+
+[deploy]
+startCommand = "gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 0"
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[env]
+PYTHON_VERSION = "3.12.3"
+FLASK_ENV = "production"
+FLASK_DEBUG = "0" 
