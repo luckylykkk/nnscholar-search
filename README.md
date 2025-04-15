@@ -1,6 +1,7 @@
 # NNScholar - 医学文献智能检索与分析系统
 
 NNScholar 是一个基于 Python 开发的医学文献智能检索与分析系统，集成了 PubMed API 和 DeepSeek AI，为医学研究人员提供便捷的文献检索和分析工具。
+在线体验网站：https://www.nnscholar.com/
 
 ## 主要功能
 
