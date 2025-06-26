@@ -78,7 +78,7 @@ papers_cache = {}  # 存储每个会话的文献数据，用于动态生成导�
 papers_cache_lock = threading.Lock()  # 保护文献缓存的锁
 
 # 嵌入模型相关度计算配置
-EMBEDDING_BATCH_SIZE = 40  # 嵌入模型批量处理大小（优化为40篇提高效率）
+EMBEDDING_BATCH_SIZE = 50  # 嵌入模型批量处理大小（优化为50篇提高效率）
 EMBEDDING_MAX_TEXT_LENGTH = 1000  # 单个文本最大长度（避免API限制）
 
 # 性能监控相关变量
@@ -2520,17 +2520,15 @@ def search():
         query = data.get('query', '').strip()
         mode = data.get('mode', 'single')
         filters = data.get('filters', {})
-        use_intelligent_routing = data.get('intelligent_routing', True)  # 默认启用智能路由
 
         logger.info(f"接收到的筛选条件: {filters}")
-        logger.info(f"智能路由模式: {use_intelligent_routing}")
-
+        
         if not query:
             return jsonify({
                 'success': False,
                 'error': '请输入检索内容'
             }), 400
-
+            
         # 获取当前用户的会话ID
         session_id = request.headers.get('sid')
         if not session_id:
@@ -2538,211 +2536,18 @@ def search():
                 'success': False,
                 'error': '无效的会话ID'
             }), 400
-
+            
         # 更新用户活跃状态
         handle_connect(session_id)
-
+        
         # 发送开始搜索的进度信息
         update_search_progress(session_id, 'start', "开始处理搜索请求...", 0)
-
-        # 智能数据库选择和检索式转换
-        recommended_databases = None
-        detected_field = 'general'
-        analysis_info = {}
-
-        if use_intelligent_routing:
-            try:
-                from intelligent_search_router import search_router
-
-                update_search_progress(session_id, 'analyzing', "正在分析查询内容并选择最适合的数据库...", 10)
-
-                # 分析用户输入并选择最佳数据库
-                recommended_database, detected_field, analysis_info = search_router.analyze_query_and_select_database(query)
-
-                logger.info(f"智能路由推荐: 数据库={recommended_database}, 领域={detected_field}")
-
-                # 转换为对应数据库的检索式
-                update_search_progress(session_id, 'converting_strategy', f"正在转换为{recommended_database.upper()}检索策略...", 15)
-                optimized_query = search_router.convert_to_search_strategy(query, recommended_database, detected_field)
-                logger.info(f"转换后的{recommended_database}检索式: {optimized_query}")
-
-                # 如果推荐的是PubMed，使用现有的PubMed搜索逻辑
-                if recommended_database == 'pubmed':
-                    query = optimized_query  # 使用转换后的检索式继续PubMed搜索
-                else:
-                    # 如果推荐的是其他数据库，使用单数据库搜索
-                    logger.info(f"推荐使用{recommended_database}数据库搜索")
-
-                    try:
-                        from integrated_search import integrated_search_engine
-
-                        update_search_progress(session_id, 'searching_database', f"正在搜索{recommended_database.upper()}数据库...", 30)
-
-                        # 执行单数据库搜索
-                        papers, search_strategy, total_count, _ = integrated_search_engine.search_single_database(
-                            recommended_database, optimized_query, 600
-                        )
-
-                        # 处理搜索结果
-                        update_search_progress(session_id, 'processing_results', "正在处理搜索结果...", 70)
-
-                        # 计算相关度
-                        try:
-                            batch_relevance_scores = calculate_batch_embedding_relevance(query, papers, EMBEDDING_BATCH_SIZE)
-                            if batch_relevance_scores:
-                                for i, paper in enumerate(papers):
-                                    if i in batch_relevance_scores:
-                                        paper['relevance'] = batch_relevance_scores[i]
-                                    else:
-                                        paper['relevance'] = 50.0
-                            else:
-                                for paper in papers:
-                                    paper['relevance'] = 50.0
-                        except Exception as e:
-                            logger.error(f"计算相关度时出错: {e}")
-                            for paper in papers:
-                                paper['relevance'] = 50.0
-
-                        # 应用筛选条件
-                        filtered_papers, stats = filter_papers_by_metrics(papers, filters)
-
-                        # 保存到缓存
-                        with papers_cache_lock:
-                            papers_cache[session_id] = {
-                                'papers': filtered_papers,
-                                'original_papers': papers,
-                                'query': query,
-                                'search_strategy': search_strategy,
-                                'total_count': total_count,
-                                'filtered_count': len(filtered_papers),
-                                'timestamp': datetime.now(),
-                                'stats': stats,
-                                'database': recommended_database,
-                                'search_type': 'single_database',
-                                'analysis_info': analysis_info
-                            }
-
-                        update_search_progress(session_id, 'complete', f"{recommended_database.upper()}搜索完成，找到 {len(filtered_papers)} 篇相关文献", 100)
-
-                        return jsonify({
-                            'success': True,
-                            'data': filtered_papers,
-                            'original_papers': papers,
-                            'search_strategy': search_strategy,
-                            'total_count': total_count,
-                            'filtered_count': len(filtered_papers),
-                            'database': recommended_database,
-                            'has_cached_data': True,
-                            'session_id': session_id,
-                            'search_type': 'single_database',
-                            'analysis_info': analysis_info
-                        })
-
-                    except ImportError:
-                        logger.warning(f"{recommended_database}数据库搜索模块不可用，回退到PubMed搜索")
-                        # 继续执行PubMed搜索
-                    except Exception as e:
-                        logger.error(f"{recommended_database}数据库搜索失败: {e}")
-                        # 继续执行PubMed搜索
-
-            except ImportError:
-                logger.warning("智能路由模块不可用，使用默认搜索")
-                use_intelligent_routing = False
-            except Exception as e:
-                logger.error(f"智能路由分析失败: {e}")
-                use_intelligent_routing = False
         
-        # 根据智能路由结果决定搜索策略
-        if use_intelligent_routing and recommended_databases and 'pubmed' not in recommended_databases:
-            # 使用多数据库搜索
-            update_search_progress(session_id, 'multi_database_search', "正在执行多数据库搜索...", 25)
-
-            try:
-                from integrated_search import search_multiple_databases_api
-
-                # 为每个推荐的数据库转换检索式
-                optimized_queries = {}
-                for db in recommended_databases:
-                    try:
-                        from intelligent_search_router import search_router
-                        optimized_query = search_router.convert_to_search_strategy(query, db, detected_field)
-                        optimized_queries[db] = optimized_query
-                        logger.info(f"数据库 {db} 的检索式: {optimized_query}")
-                    except Exception as e:
-                        logger.error(f"为数据库 {db} 转换检索式失败: {e}")
-                        optimized_queries[db] = query
-
-                # 执行多数据库搜索
-                papers, search_strategy, total_count, _ = search_multiple_databases_api(
-                    query, 600, recommended_databases, detected_field
-                )
-
-                # 计算相关度并应用筛选
-                update_search_progress(session_id, 'processing_results', "正在处理搜索结果...", 70)
-
-                try:
-                    batch_relevance_scores = calculate_batch_embedding_relevance(query, papers, EMBEDDING_BATCH_SIZE)
-                    if batch_relevance_scores:
-                        for i, paper in enumerate(papers):
-                            if i in batch_relevance_scores:
-                                paper['relevance'] = batch_relevance_scores[i]
-                            else:
-                                paper['relevance'] = 50.0
-                    else:
-                        for paper in papers:
-                            paper['relevance'] = 50.0
-                except Exception as e:
-                    logger.error(f"计算相关度时出错: {e}")
-                    for paper in papers:
-                        paper['relevance'] = 50.0
-
-                filtered_papers, stats = filter_papers_by_metrics(papers, filters)
-
-                # 保存到缓存
-                with papers_cache_lock:
-                    papers_cache[session_id] = {
-                        'papers': filtered_papers,
-                        'original_papers': papers,
-                        'query': query,
-                        'search_strategy': search_strategy,
-                        'total_count': total_count,
-                        'filtered_count': len(filtered_papers),
-                        'timestamp': datetime.now(),
-                        'stats': stats,
-                        'databases': recommended_databases,
-                        'search_type': 'multi_database',
-                        'analysis_info': analysis_info
-                    }
-
-                update_search_progress(session_id, 'complete', f"多数据库搜索完成，找到 {len(filtered_papers)} 篇相关文献", 100)
-
-                return jsonify({
-                    'success': True,
-                    'data': filtered_papers,
-                    'original_papers': papers,
-                    'search_strategy': search_strategy,
-                    'total_count': total_count,
-                    'filtered_count': len(filtered_papers),
-                    'databases': recommended_databases,
-                    'has_cached_data': True,
-                    'session_id': session_id,
-                    'search_type': 'multi_database',
-                    'analysis_info': analysis_info
-                })
-
-            except ImportError:
-                logger.warning("多数据库搜索模块不可用，回退到PubMed搜索")
-                # 继续执行PubMed搜索
-            except Exception as e:
-                logger.error(f"多数据库搜索失败: {e}")
-                # 继续执行PubMed搜索
-
-        # 执行PubMed搜索（默认或回退）
         # 根据模式处理搜索
         if mode == 'paragraph':
             # 段落模式处理
             update_search_progress(session_id, 'paragraph_mode', "正在使用段落模式处理...", 10)
-
+            
             # 分解段落为句子
             sentences = split_paragraph_to_sentences(query)
             if not sentences:
@@ -2750,23 +2555,23 @@ def search():
                     'success': True,
                     'sentences': []
                 })
-
+            
             # 使用线程池并行处理所有句子
             results = process_paragraph_threaded(session_id, sentences, filters)
-
+            
             # 发送完成消息
             update_search_progress(session_id, 'complete', f"段落处理完成，共处理 {len(results)} 个句子", 100)
-
+            
             return jsonify({
                 'success': True,
                 'sentences': results
             })
-
+            
         elif mode == 'strategy':
             # 直接使用提供的检索策略
             search_strategy = query
             logger.info(f"使用提供的检索策略: {search_strategy}")
-
+            
             update_search_progress(session_id, 'executing_strategy', "正在执行检索策略...", 30)
         else:
             # 生成检索策略
@@ -2889,205 +2694,6 @@ def search():
         
     except Exception as e:
         logger.error(f"搜索请求处理出错: {str(e)}\n{traceback.format_exc()}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@app.route('/api/single_database_search', methods=['POST'])
-def single_database_search():
-    """单数据库搜索API端点"""
-    try:
-        data = request.get_json()
-        query = data.get('query', '').strip()
-        database = data.get('database', 'pubmed')  # 选择的数据库，默认PubMed
-        max_results = data.get('max_results', 600)
-        filters = data.get('filters', {})
-
-        if not query:
-            return jsonify({
-                'success': False,
-                'error': '请输入检索内容'
-            }), 400
-
-        # 获取当前用户的会话ID
-        session_id = request.headers.get('sid')
-        if not session_id:
-            return jsonify({
-                'success': False,
-                'error': '无效的会话ID'
-            }), 400
-
-        # 更新用户活跃状态
-        handle_connect(session_id)
-
-        # 发送开始搜索的进度信息
-        update_search_progress(session_id, 'start', f"开始搜索 {database.upper()} 数据库...", 0)
-
-        # 如果选择PubMed，使用现有的搜索逻辑
-        if database.lower() == 'pubmed':
-            # 使用现有的PubMed搜索逻辑
-            update_search_progress(session_id, 'generating_strategy', "正在生成检索策略...", 20)
-
-            # 生成检索策略（使用现有逻辑）
-            prompt = """作为PubMed搜索专家，请为以下研究内容生成优化的PubMed检索策略：
-
-研究内容：""" + query + """
-
-请提供：
-1. 核心检索策略（使用MeSH词汇、关键词组合、布尔逻辑）
-2. 检索策略说明
-
-要求：
-- 使用标准的PubMed检索语法
-- 合理使用MeSH主题词和自由词
-- 适当使用布尔逻辑操作符（AND、OR、NOT）
-- 考虑词汇变体和同义词
-- 策略应具有较好的查全率和查准率
-
-请直接提供检索策略，不要包含其他解释文字。"""
-
-            try:
-                search_strategy = call_deepseek_api(prompt).strip()
-                if not search_strategy:
-                    search_strategy = query
-            except Exception as e:
-                logger.error(f"生成检索策略失败: {e}")
-                search_strategy = query
-
-            # 执行PubMed搜索
-            id_list, search_strategy, total_count, result_count = search_pubmed(search_strategy, max_results)
-
-            if not id_list:
-                update_search_progress(session_id, 'complete', "未找到相关文献", 100)
-                return jsonify({
-                    'success': True,
-                    'data': [],
-                    'search_strategy': search_strategy,
-                    'total_count': 0,
-                    'filtered_count': 0,
-                    'database': database
-                })
-
-            # 获取文献详情
-            papers = fetch_paper_details(id_list)
-
-
-
-    except Exception as e:
-        logger.error(f"多数据库搜索请求处理出错: {str(e)}\n{traceback.format_exc()}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@app.route('/api/get_supported_databases', methods=['GET'])
-def get_supported_databases():
-    """获取支持的数据库列表"""
-    try:
-        from integrated_search import get_supported_databases
-        databases = get_supported_databases()
-
-        return jsonify({
-            'success': True,
-            'databases': databases
-        })
-
-    except ImportError:
-        return jsonify({
-            'success': False,
-            'error': '多数据库功能暂不可用'
-        }), 500
-    except Exception as e:
-        logger.error(f"获取数据库列表时出错: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@app.route('/api/analyze_query', methods=['POST'])
-def analyze_query():
-    """分析用户查询并推荐数据库和检索策略"""
-    try:
-        data = request.get_json()
-        query = data.get('query', '').strip()
-
-        if not query:
-            return jsonify({
-                'success': False,
-                'error': '请输入查询内容'
-            }), 400
-
-        try:
-            from intelligent_search_router import search_router
-
-            # 分析查询并选择最佳数据库
-            recommended_database, detected_field, analysis_info = search_router.analyze_query_and_select_database(query)
-
-            # 为推荐的数据库生成检索式
-            search_strategy = ''
-            try:
-                search_strategy = search_router.convert_to_search_strategy(query, recommended_database, detected_field)
-            except Exception as e:
-                logger.error(f"为数据库 {recommended_database} 生成检索式失败: {e}")
-                search_strategy = query  # 回退到原始查询
-
-            return jsonify({
-                'success': True,
-                'query': query,
-                'detected_field': detected_field,
-                'recommended_database': recommended_database,
-                'search_strategy': search_strategy,
-                'analysis_info': analysis_info
-            })
-
-        except ImportError:
-            return jsonify({
-                'success': False,
-                'error': '智能路由功能暂不可用'
-            }), 500
-
-    except Exception as e:
-        logger.error(f"分析查询时出错: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@app.route('/api/demo_multi_database', methods=['GET'])
-def demo_multi_database():
-    """演示多数据库功能"""
-    try:
-        from demo_integration import DemoIntegration
-
-        demo = DemoIntegration()
-
-        # 获取数据库覆盖信息
-        coverage = demo.demo_database_coverage()
-
-        # 演示查询示例
-        test_queries = [
-            "糖尿病的药物治疗研究",
-            "深度学习算法优化",
-            "量子物理理论研究"
-        ]
-
-        routing_examples = demo.demo_intelligent_routing(test_queries)
-
-        return jsonify({
-            'success': True,
-            'database_coverage': coverage,
-            'routing_examples': routing_examples,
-            'message': '多数据库功能演示数据'
-        })
-
-    except ImportError:
-        return jsonify({
-            'success': False,
-            'error': '演示功能暂不可用'
-        }), 500
-    except Exception as e:
-        logger.error(f"演示多数据库功能时出错: {e}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -5011,44 +4617,29 @@ def precise_literature_search():
         logger.info(f"开始精确查找文献，查找要求: {search_requirement}")
         logger.info(f"从 {len(papers)} 篇文献中筛选，最多返回 {max_papers} 篇")
 
-        # 使用嵌入模型计算相关度
+        # 使用嵌入模型批量计算相关度
         try:
-            # 获取查找要求的嵌入向量
-            requirement_embeddings = call_embedding_api([search_requirement])
-            if not requirement_embeddings:
-                raise Exception("无法获取查找要求的嵌入向量")
+            logger.info(f"开始批量计算精确查找的嵌入相关度")
 
-            requirement_embedding = requirement_embeddings[0]
+            # 使用现有的批量嵌入相关度计算函数
+            batch_relevance_scores = calculate_batch_embedding_relevance(search_requirement, papers, EMBEDDING_BATCH_SIZE)
 
-            # 计算每篇文献与查找要求的相关度
-            papers_with_relevance = []
-            for paper in papers:
-                title = paper.get('title', '')
-                abstract = paper.get('abstract', '')
+            if batch_relevance_scores:
+                # 使用批量计算的结果
+                papers_with_relevance = []
+                for i, paper in enumerate(papers):
+                    if i in batch_relevance_scores:
+                        paper_copy = paper.copy()
+                        paper_copy['relevance'] = batch_relevance_scores[i]
+                        papers_with_relevance.append(paper_copy)
 
-                # 组合标题和摘要
-                paper_text = f"{title} {abstract}"
+                # 按相关度排序并选择前N篇
+                sorted_papers = sorted(papers_with_relevance, key=lambda x: x.get('relevance', 0), reverse=True)
+                top_papers = sorted_papers[:max_papers]
 
-                # 获取文献的嵌入向量
-                paper_embeddings = call_embedding_api([paper_text])
-                if not paper_embeddings:
-                    continue
-
-                paper_embedding = paper_embeddings[0]
-
-                # 计算余弦相似度
-                similarity = calculate_cosine_similarity(requirement_embedding, paper_embedding)
-
-                # 添加相关度信息
-                paper_copy = paper.copy()
-                paper_copy['relevance'] = round(similarity * 100, 1)
-                papers_with_relevance.append(paper_copy)
-
-            # 按相关度排序并选择前N篇
-            sorted_papers = sorted(papers_with_relevance, key=lambda x: x.get('relevance', 0), reverse=True)
-            top_papers = sorted_papers[:max_papers]
-
-            logger.info(f"筛选出 {len(top_papers)} 篇高相关度文献")
+                logger.info(f"批量计算完成，筛选出 {len(top_papers)} 篇高相关度文献")
+            else:
+                raise Exception("批量嵌入计算失败")
 
         except Exception as e:
             logger.error(f"计算文献相关度时出错: {e}")
