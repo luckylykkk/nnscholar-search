@@ -1,0 +1,31 @@
+# Core dependencies
+Flask==3.0.2
+Flask-SocketIO==5.3.6
+requests==2.31.0
+python-dotenv==1.0.1
+gunicorn==21.2.0
+werkzeug==3.0.1
+flask-cors==4.0.0
+
+# Data Processing
+pandas==2.2.0
+numpy==1.26.4
+scikit-learn==1.4.0
+nltk==3.8.1
+beautifulsoup4==4.12.3
+lxml==5.1.0
+
+# AI and NLP
+langchain-community==0.0.19
+pydantic>=2.5.2
+
+# Data Visualization
+matplotlib==3.8.2
+seaborn==0.13.2
+
+# Document Generation
+python-docx==1.1.0
+openpyxl==3.1.2
+
+# Logging
+concurrent-log-handler==0.9.24

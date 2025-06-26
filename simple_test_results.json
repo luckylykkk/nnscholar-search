@@ -1,0 +1,225 @@
+{
+  "openalex": {
+    "success": true,
+    "count": 3,
+    "sample_data": {
+      "id": "https://openalex.org/W3023540311",
+      "title": "Genetic algorithms in search, optimization, and machine learning",
+      "display_name": "Genetic algorithms in search, optimization, and machine learning",
+      "publication_year": 1989,
+      "authorships": [],
+      "abstract_inverted_index": {
+        "From": [
+          0
+        ],
+        "the": [
+          1,
+          14
+        ],
+        "Publisher:\r\nThis": [
+          2
+        ],
+        "book": [
+          3
+        ],
+        "brings": [
+          4
+        ],
+        "together": [
+          5
+        ],
+        "-": [
+          6,
+          13
+        ],
+        "in": [
+          7,
+          35
+        ],
+        "an": [
+          8
+        ],
+        "informal": [
+          9
+        ],
+        "and": [
+          10,
+          19,
+          27,
+          45,
+          63,
+          70
+        ],
+        "tutorial": [
+          11
+        ],
+        "fashion": [
+          12
+        ],
+        "computer": [
+          15,
+          52,
+          68
+        ],
+        "techniques,": [
+          16
+        ],
+        "mathematical": [
+          17
+        ],
+        "tools,": [
+          18
+        ],
+        "research": [
+          20
+        ],
+        "results": [
+          21
+        ],
+        "that": [
+          22
+        ],
+        "will": [
+          23
+        ],
+        "enable": [
+          24
+        ],
+        "both": [
+          25
+        ],
+        "students": [
+          26
+        ],
+        "practitioners": [
+          28
+        ],
+        "to": [
+          29,
+          33
+        ],
+        "apply": [
+          30
+        ],
+        "genetic": [
+          31
+        ],
+        "algorithms": [
+          32,
+          47
+        ],
+        "problems": [
+          34
+        ],
+        "many": [
+          36
+        ],
+        "fields.": [
+          37
+        ],
+        "\r\n\r\nMajor": [
+          38
+        ],
+        "concepts": [
+          39
+        ],
+        "are": [
+          40,
+          48
+        ],
+        "illustrated": [
+          41,
+          49
+        ],
+        "with": [
+          42
+        ],
+        "running": [
+          43
+        ],
+        "examples,": [
+          44
+        ],
+        "major": [
+          46
+        ],
+        "by": [
+          50
+        ],
+        "Pascal": [
+          51
+        ],
+        "programs.": [
+          53
+        ],
+        "No": [
+          54
+        ],
+        "prior": [
+          55
+        ],
+        "knowledge": [
+          56
+        ],
+        "of": [
+          57,
+          67
+        ],
+        "GAs": [
+          58
+        ],
+        "or": [
+          59
+        ],
+        "genetics": [
+          60
+        ],
+        "is": [
+          61,
+          73
+        ],
+        "assumed,": [
+          62
+        ],
+        "only": [
+          64
+        ],
+        "a": [
+          65
+        ],
+        "minimum": [
+          66
+        ],
+        "programming": [
+          69
+        ],
+        "mathematics": [
+          71
+        ],
+        "background": [
+          72
+        ],
+        "required.": [
+          74
+        ]
+      }
+    },
+    "total_results": 2342633
+  },
+  "arxiv": {
+    "success": false,
+    "error": "('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+  },
+  "semantic_scholar": {
+    "success": false,
+    "error": "HTTPSConnectionPool(host='api.semanticscholar.org', port=443): Max retries exceeded with url: /graph/v1/paper/search?query=machine+learning&limit=3&fields=paperId%2Ctitle%2Cabstract%2Cyear%2Cauthors (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+  },
+  "doaj": {
+    "success": false,
+    "error": "404 Client Error: Not Found for url: https://doaj.org/api/v2/search/articles?q=machine+learning&pageSize=3"
+  },
+  "crossref": {
+    "success": false,
+    "error": "HTTPSConnectionPool(host='api.crossref.org', port=443): Max retries exceeded with url: /works?query=machine+learning&rows=3 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)')))"
+  }
+}

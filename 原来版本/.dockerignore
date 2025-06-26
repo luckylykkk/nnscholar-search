@@ -1,0 +1,13 @@
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv
+.idea
+logs/*
+exports/*
+!logs/.gitkeep
+!exports/.gitkeep 
