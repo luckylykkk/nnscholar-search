@@ -1,6 +1,47 @@
-# NNScholar - 医学文献智能检索与分析系统
+# 🧬 NNScholar - 智能学术文献检索与分析平台
 
-🔬 **NNScholar** 是一个基于AI的医学文献智能检索与分析系统，采用现代化聊天界面设计，为研究者提供从文献检索到学术写作的全流程支持。
+> 基于AI驱动的学术文献检索、分析与综述生成工具
+
+🔬 **NNScholar** 是一个集成了人工智能技术的学术文献检索与分析平台，专为科研工作者、学者和研究生设计。通过DeepSeek AI的强大分析能力，为用户提供智能化的文献检索、深度分析和学术写作支持。
+
+## � 功能演示
+
+[![NNScholar功能演示](https://img.youtube.com/vi/ubyL7WJjn_I/maxresdefault.jpg)](https://youtu.be/ubyL7WJjn_I)
+
+**📺 [观看完整功能演示视频](https://youtu.be/ubyL7WJjn_I)**
+
+通过视频演示，您可以直观了解：
+- 💬 智能聊天界面的对话式检索体验
+- 🔬 专业检索界面的高级功能
+- 🤖 AI智能推荐系统的工作流程
+- 📊 文献分析和导出功能的实际操作
+
+## �🎯 双界面设计
+
+### 💬 智能聊天界面 (`/chat`)
+现代化的DeepSeek风格聊天界面，提供对话式的学术研究体验：
+
+![聊天界面](static/images/chat-interface.png)
+
+**特色功能：**
+- 🤖 AI智能推荐系统
+- 💬 对话式文献检索
+- 📊 三层智能布局（检索摘要 → AI推荐 → 完整文献）
+- 🔍 精确查找文献功能
+- 📝 实时学术分析
+- 💾 历史会话管理
+
+### 🔬 专业检索界面 (`/`)
+传统的专业检索界面，适合深度学术研究：
+
+![专业界面](static/images/professional-interface.png)
+
+**特色功能：**
+- 🎯 精准检索策略生成
+- 📊 多维度筛选条件
+- 📈 可视化数据分析
+- 📚 基于文献的学术分析工具
+- 📄 专业导出功能
 
 ## ✨ 核心功能
 
@@ -55,75 +96,60 @@
 
 ## 🚀 快速开始
 
+> 💡 **首次使用？** 建议先观看 [功能演示视频](https://youtu.be/ubyL7WJjn_I) 了解完整功能
+
 ### 环境要求
 - Python 3.8+
-- 稳定的网络连接
 - DeepSeek API密钥
-- PubMed API密钥（可选，用于提高检索速度）
+- 嵌入模型API密钥
 
-### 本地部署
-
-1. **克隆项目**
-```bash
-git clone https://github.com/luckylykkk/NNscholarweb.git
-cd NNscholarweb
-```
-
-2. **安装依赖**
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-3. **配置环境变量**
-在项目根目录创建`.env`文件：
-```env
-DEEPSEEK_API_KEY=your_deepseek_api_key
-PUBMED_API_KEY=your_pubmed_api_key  # 可选
-PUBMED_EMAIL=your_email@example.com
-TOOL_NAME=nnscholar_pubmed
-PUBMED_API_URL=https://eutils.ncbi.nlm.nih.gov/entrez/eutils/
-```
-
-4. **启动应用**
-```bash
-python app.py
-```
-
-5. **访问应用**
-打开浏览器访问：
-- 聊天界面：`http://localhost:5000/chat`
-- 传统界面：`http://localhost:5000`
+### 快速部署
+1. 克隆项目并安装依赖
+2. 配置API密钥
+3. 启动应用
+4. 访问界面：
+   - 💬 **智能聊天界面**：`/chat` （推荐）
+   - 🔬 **专业检索界面**：`/`
 
 ## 📖 使用指南
 
-### 🔍 文献检索流程
+### 💬 智能聊天界面使用流程
 
-1. **输入检索内容**
-   - 在聊天界面输入研究主题或关键词
-   - 支持中英文混合输入
-   - 可以输入完整的研究问题
+**适用场景**：快速文献检索、对话式学术分析、日常研究查询
 
-2. **AI智能检索**
-   - 系统自动生成优化的PubMed检索策略
-   - 实时显示检索进度和详细日志
-   - 智能计算文献相关性评分
+1. **对话式检索**
+   - 直接输入研究问题或关键词
+   - 支持自然语言描述，如"糖尿病治疗的最新进展"
+   - AI自动理解意图并生成检索策略
 
-3. **结果筛选与分析**
-   - 使用多维度筛选条件过滤文献
-   - 查看文献的影响因子和分区信息
-   - 获得精准的文献列表
+2. **三层智能展示**
+   - 📋 **检索摘要**：快速了解检索结果概况
+   - 🤖 **AI推荐**：智能推荐最重要的代表性文献
+   - 📚 **完整文献**：查看所有检索到的文献详情
 
-4. **深度分析**
-   - 📊 **全面研究现状分析**：生成详细的研究现状报告
-   - 📝 **综述选题**：获取基于真实文献的综述选题建议
-   - 🔬 **论著选题**：发现研究空白，获得原创研究方向
-   - 📚 **生成完整综述**：自动生成结构化综述文档
+3. **智能交互功能**
+   - ⭐ **代表性文章推荐**：基于影响因子和创新性筛选
+   - 🔍 **精确查找文献**：从结果中进一步精准筛选
+   - 📊 **学术分析**：研究现状、选题建议、综述生成
 
-5. **数据导出**
+### 🔬 专业检索界面使用流程
+
+**适用场景**：深度学术研究、系统性文献调研、专业数据分析
+
+1. **精准检索设置**
+   - 详细的检索条件配置
+   - 多维度筛选参数设置
+   - 专业的检索策略定制
+
+2. **高级分析功能**
+   - 📈 **期刊热点分析**：分析特定期刊的研究趋势
+   - 📊 **可视化展示**：热力图、词云图、趋势图
+   - 🔬 **深度数据挖掘**：作者统计、时间序列分析
+
+3. **专业导出功能**
    - 📊 **Excel表格**：包含影响因子、分区信息的详细数据
    - 📄 **Word文档**：格式化的文献报告
+   - 📈 **图表导出**：可视化分析结果
 
 ### 🎯 期刊热点分析
 
@@ -157,107 +183,14 @@ python app.py
 - 文献筛选、创新点识别、基金申请书撰写
 - 等覆盖学术研究全流程的工具
 
-## 📁 项目结构
+##  技术架构
 
-```
-NNscholarweb/
-├── app.py                 # 主应用程序
-├── analyze_papers.py      # 文献分析脚本
-├── journal_analyzer.py    # 期刊分析工具
-├── requirements.txt       # 依赖包列表
-├── .env                  # 环境配置文件
-├── data/                 # 数据文件目录
-│   └── journal_metrics/  # 期刊指标数据
-├── exports/              # 导出文件目录
-├── logs/                 # 日志文件目录
-├── static/               # 静态资源目录
-│   ├── images/           # 热力图等图像文件
-│   └── js/               # JavaScript文件
-├── templates/            # 模板文件目录
-│   ├── index.html        # 传统界面
-│   ├── chat.html         # 聊天界面
-│   └── admin.html        # 管理界面
-└── 原来版本/              # 原始版本备份
-```
-
-## 🔧 技术架构
-
-### 后端技术栈
-- **Python 3.8+** - 主要开发语言
-- **Flask** - Web框架
-- **Flask-SocketIO** - 实时通信
-- **ThreadPoolExecutor** - 并发处理
-- **pandas** - 数据处理
-- **python-docx** - Word文档生成
-- **openpyxl** - Excel文档生成
-- **scikit-learn** - 机器学习（相关性计算）
-- **nltk** - 自然语言处理
-
-### 前端技术栈
-- **HTML5/CSS3** - 页面结构和样式
-- **JavaScript (ES6+)** - 交互逻辑
-- **Bootstrap 5** - UI框架
-- **ECharts** - 数据可视化
-- **Socket.IO** - 实时通信
-
-### 外部API
-- **DeepSeek AI** - 智能检索策略生成和文献分析
-- **嵌入模型API** - 文献相关度计算和语义匹配（支持SiliconFlow等）
+### 核心技术
+- **Python 3.8+** + **Flask** - 后端框架
+- **DeepSeek AI** - 智能分析引擎
+- **嵌入模型API** - 语义匹配计算
 - **PubMed API** - 医学文献检索
-- **期刊指标数据库** - 影响因子和分区信息
-
-## ⚙️ 配置说明
-
-### 环境变量
-
-| 变量名 | 说明 | 必需 | 示例值 |
-|--------|------|------|--------|
-| `DEEPSEEK_API_KEY` | DeepSeek AI API密钥 | ✅ | `sk-xxx...` |
-| `EMBEDDING_API_KEY` | 嵌入模型API密钥 | ✅ | `sk-xxx...` |
-| `EMBEDDING_API_URL` | 嵌入模型API地址 | ❌ | `https://api.siliconflow.cn/v1/embeddings` |
-| `EMBEDDING_MODEL` | 嵌入模型名称 | ❌ | `BAAI/bge-m3` |
-| `PUBMED_API_KEY` | PubMed API密钥 | ⚠️ | `fc304...` |
-| `PUBMED_EMAIL` | PubMed访问邮箱 | ⚠️ | `your@email.com` |
-| `TOOL_NAME` | 工具标识 | ❌ | `nnscholar_pubmed` |
-| `PUBMED_API_URL` | PubMed API地址 | ❌ | `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/` |
-
-> ⚠️ PubMed API密钥可选，但建议配置以提高检索速度和稳定性
-> ✅ 嵌入模型API密钥必需，用于文献相关度计算和精确查找功能
-
-### 筛选设置
-用户可以在聊天界面右下角的设置面板中自定义：
-- 发表年份范围
-- 最低影响因子
-- JCR分区（Q1-Q4）
-- 中科院分区（1-4区）
-- 文献类型筛选
-- 显示数量限制
-
-## 🚨 注意事项
-
-1. **首次运行**：会自动下载NLTK数据包，请确保网络连接稳定
-2. **API密钥安全**：请妥善保管API密钥，不要在代码中硬编码或泄露
-3. **文件权限**：确保`exports/`、`logs/`、`static/images/`目录有写入权限
-4. **网络连接**：需要稳定的网络连接访问PubMed和DeepSeek API
-5. **浏览器兼容性**：推荐使用Chrome、Firefox、Edge等现代浏览器
-
-## ❓ 常见问题
-
-### 安装和配置问题
-- **NLTK数据下载失败**：手动下载并放置在正确目录，或使用代理
-- **依赖包安装失败**：使用`pip install --upgrade pip`更新pip后重试
-- **端口占用**：修改`app.py`中的端口号或关闭占用端口的程序
-
-### 功能使用问题
-- **检索无结果**：检查网络连接和API密钥配置
-- **分析功能无响应**：确保先进行文献检索，再使用分析功能
-- **导出文件失败**：检查`exports/`目录权限和磁盘空间
-- **图表不显示**：检查`static/images/`目录权限和浏览器JavaScript设置
-
-### API相关问题
-- **DeepSeek API限制**：检查API密钥余额和调用频率限制
-- **PubMed API超时**：网络不稳定时可能出现，重试即可
-- **检索策略生成失败**：检查DeepSeek API密钥是否正确配置
+- **Bootstrap 5** + **ECharts** - 前端界面
 
 ## 🔄 更新日志
 
@@ -292,81 +225,12 @@ NNscholarweb/
 - 📋 详细搜索日志记录
 - 🔬 文献相关性计算优化
 
-## 🚀 部署指南
 
-### 本地部署
-参考上方"快速开始"部分
-
-### 云平台部署
-
-#### Railway部署
-1. Fork本项目到您的GitHub账号
-2. 在[Railway.app](https://railway.app)注册并连接GitHub
-3. 创建新项目，选择从GitHub导入
-4. 在Variables面板添加环境变量
-5. 等待自动部署完成
-
-#### 其他平台
-- **Heroku**: 支持一键部署
-- **Vercel**: 适合静态部署
-- **Docker**: 提供Dockerfile支持
-
-## 🤝 贡献指南
-
-我们欢迎所有形式的贡献！
-
-### 如何贡献
-1. 🍴 Fork 本项目
-2. 🌿 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 💾 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 🔄 开启 Pull Request
-
-### 贡献类型
-- 🐛 Bug修复
-- ✨ 新功能开发
-- 📚 文档改进
-- 🎨 UI/UX优化
-- 🔧 性能优化
-- 🧪 测试用例
 
 ## 📞 支持与反馈
 
-- **GitHub Issues**: [提交问题](https://github.com/luckylykkk/NNscholarweb/issues)
-- **功能建议**: 欢迎在Issues中提出新功能建议
-- **使用交流**: 可以在Issues中分享使用经验和最佳实践
-
-## 📋 开发计划
-
-### 近期计划
-- [ ] 移动端适配优化
-- [ ] 多语言支持（英文界面）
-- [ ] 文献引用格式导出
-- [ ] 批量文献下载功能
-- [ ] 精确查找功能的进一步优化
-- [ ] 更多嵌入模型支持
-
-### 长期规划
-- [ ] 机器学习模型优化
-- [ ] 更多数据库支持（Web of Science、Scopus等）
-- [ ] 协作功能（团队共享、评论等）
-- [ ] API接口开放
-- [ ] 智能推荐算法持续优化
-
-## 📄 许可证
-
-本项目采用 [MIT License](LICENSE) 开源协议。
-
-## 🙏 致谢
-
-感谢以下项目和服务的支持：
-
-- [PubMed](https://pubmed.ncbi.nlm.nih.gov/) - 提供医学文献数据
-- [DeepSeek](https://www.deepseek.com/) - 提供AI分析能力
-- [Flask](https://flask.palletsprojects.com/) - Web框架支持
-- [Bootstrap](https://getbootstrap.com/) - UI组件库
-- [ECharts](https://echarts.apache.org/) - 数据可视化
-- [Socket.IO](https://socket.io/) - 实时通信
+- **🎥 功能演示**: [观看完整功能演示视频](https://youtu.be/ubyL7WJjn_I)
+- **GitHub Issues**: [提交问题](https://github.com/luckylykkk/nnscholar-search/issues)
 
 ---
 
@@ -374,8 +238,8 @@ NNscholarweb/
 
 **⭐ 如果这个项目对您有帮助，请给我们一个Star！**
 
-[![GitHub stars](https://img.shields.io/github/stars/luckylykkk/NNscholarweb.svg?style=social&label=Star)](https://github.com/luckylykkk/NNscholarweb)
-[![GitHub forks](https://img.shields.io/github/forks/luckylykkk/NNscholarweb.svg?style=social&label=Fork)](https://github.com/luckylykkk/NNscholarweb/fork)
+[![GitHub stars](https://img.shields.io/github/stars/luckylykkk/nnscholar-search.svg?style=social&label=Star)](https://github.com/luckylykkk/nnscholar-search)
+[![GitHub forks](https://img.shields.io/github/forks/luckylykkk/nnscholar-search.svg?style=social&label=Fork)](https://github.com/luckylykkk/nnscholar-search/fork)
 
 Made with ❤️ by [luckylykkk](https://github.com/luckylykkk)
 
