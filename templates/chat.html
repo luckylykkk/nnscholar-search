@@ -2186,6 +2186,15 @@
                             <button class="action-btn" onclick="analyzeResearchStatus('${query}', '${backendSessionId}')">
                                 📊 全面研究现状分析
                             </button>
+                            <button class="action-btn" onclick="generateReviewTopicSuggestions('${query}', '${backendSessionId}')">
+                                📝 综述选题建议
+                            </button>
+                            <button class="action-btn" onclick="generateResearchTopicSuggestions('${query}', '${backendSessionId}')">
+                                🔬 论著选题建议
+                            </button>
+                            <button class="action-btn" onclick="generateCompleteReview('${query}', '${backendSessionId}')">
+                                📚 生成完整综述
+                            </button>
                             <button class="action-btn" onclick="preciseSearch('${backendSessionId}')">
                                 🔍 精确查找文献
                             </button>
@@ -2468,7 +2477,7 @@
         }
 
         // 生成完整综述
-        async function generateFullReview(query, sessionId) {
+        async function generateCompleteReview(query, sessionId) {
             try {
                 addMessage('📚 正在生成完整综述，这可能需要几分钟时间，请稍候...', 'assistant');
 
