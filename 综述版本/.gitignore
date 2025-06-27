@@ -21,30 +21,23 @@ wheels/
 *.egg
 
 # Virtual Environment
-nnscholars/
 venv/
 ENV/
-
+env/
+.venv/
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# Environment variables
-.env
-
 # Logs
+logs/*
 *.log
-
-# Database
-*.db
-*.sqlite3
-
-# Other
-.DS_Store
+!logs/.gitkeep
 
 # Local environment
+.env
 .env.local
 .env.*.local
 
@@ -54,6 +47,7 @@ exports/*
 !exports/.gitkeep
 
 # System Files
+.DS_Store
 Thumbs.db
 .cursor/
 temp/

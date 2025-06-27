@@ -1590,10 +1590,36 @@
                                 </div>
                             `;
                         }
-                            
+
+                        // 添加功能按钮区域
+                        if (data.data && data.data.length > 0) {
+                            const actionButtonsHtml = `
+                                <div class="card mt-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-tools me-2"></i>基于文献的学术分析
+                                        </h5>
+                                        <p class="card-text text-muted">基于检索到的 ${data.data.length} 篇文献进行深度学术分析</p>
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                            <button class="btn btn-outline-primary" onclick="generateReviewTopicSuggestions()">
+                                                <i class="fas fa-file-alt me-2"></i>📝 综述选题建议
+                                            </button>
+                                            <button class="btn btn-outline-success" onclick="generateResearchTopicSuggestions()">
+                                                <i class="fas fa-microscope me-2"></i>🔬 论著选题建议
+                                            </button>
+                                            <button class="btn btn-outline-info" onclick="generateCompleteReview()">
+                                                <i class="fas fa-book me-2"></i>📚 生成完整综述
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            resultsContainer.insertAdjacentHTML('beforeend', actionButtonsHtml);
+                        }
+
                             // 滚动到结果区域
                             resultsContainer.scrollIntoView({ behavior: 'smooth' });
-                        
+
                         showToast('检索完成', 'success');
                     } else {
                         throw new Error(data.error || '检索失败');
@@ -2069,6 +2095,130 @@
             if (trendData.topics && trendData.topics.length > 0) trendChart.resize();
         });
     }
+
+    // 综述选题建议
+    async function generateReviewTopicSuggestions() {
+        try {
+            showToast('正在生成综述选题建议，请稍候...', 'info');
+
+            const response = await fetch('/api/review_topic_suggestion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'sid': currentSessionId
+                },
+                body: JSON.stringify({ query: currentQuery })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // 创建结果显示区域
+                const resultHtml = `
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-file-alt me-2"></i>📝 综述选题建议
+                            </h5>
+                            <div class="analysis-content">
+                                ${data.suggestions.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('results-container').insertAdjacentHTML('beforeend', resultHtml);
+                showToast('综述选题建议生成完成', 'success');
+            } else {
+                showToast(`生成失败: ${data.error}`, 'error');
+            }
+        } catch (error) {
+            showToast(`生成过程中出现错误: ${error.message}`, 'error');
+        }
+    }
+
+    // 论著选题建议
+    async function generateResearchTopicSuggestions() {
+        try {
+            showToast('正在生成论著选题建议，请稍候...', 'info');
+
+            const response = await fetch('/api/research_topic_suggestion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'sid': currentSessionId
+                },
+                body: JSON.stringify({ query: currentQuery })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // 创建结果显示区域
+                const resultHtml = `
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-microscope me-2"></i>🔬 论著选题建议
+                            </h5>
+                            <div class="analysis-content">
+                                ${data.suggestions.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('results-container').insertAdjacentHTML('beforeend', resultHtml);
+                showToast('论著选题建议生成完成', 'success');
+            } else {
+                showToast(`生成失败: ${data.error}`, 'error');
+            }
+        } catch (error) {
+            showToast(`生成过程中出现错误: ${error.message}`, 'error');
+        }
+    }
+
+    // 生成完整综述
+    async function generateCompleteReview() {
+        try {
+            showToast('正在生成完整综述，这可能需要几分钟时间，请稍候...', 'info');
+
+            const response = await fetch('/api/generate_full_review', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'sid': currentSessionId
+                },
+                body: JSON.stringify({ query: currentQuery })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // 创建结果显示区域
+                const resultHtml = `
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-book me-2"></i>📚 完整综述
+                            </h5>
+                            <div class="analysis-content">
+                                ${data.review.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('results-container').insertAdjacentHTML('beforeend', resultHtml);
+                showToast('完整综述生成完成', 'success');
+            } else {
+                showToast(`生成失败: ${data.error}`, 'error');
+            }
+        } catch (error) {
+            showToast(`生成过程中出现错误: ${error.message}`, 'error');
+        }
+    }
+
+    // 全局变量存储当前查询和会话ID
+    let currentQuery = '';
+    let currentSessionId = '';
     </script>
 </body>
 </html>

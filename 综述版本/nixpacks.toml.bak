@@ -1,0 +1,10 @@
+# nixpacks.toml
+
+[phases.setup]
+nixPkgs = ["python310", "python310Packages.pip", "python310Packages.setuptools", "python310Packages.wheel", "gcc", "python3-dev", "build-essential"]
+
+[phases.install]
+cmds = ["pip install --upgrade pip", "pip install -r requirements.txt", "python -m nltk.downloader punkt stopwords wordnet"]
+
+[start]
+cmd = "gunicorn --worker-class eventlet -w 1 wsgi:app"

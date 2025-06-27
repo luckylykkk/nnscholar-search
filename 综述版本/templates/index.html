@@ -1,0 +1,3549 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NNScholar - 医学文献智能检索与分析系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 添加词云图支持 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+    <!-- 添加Markdown解析支持 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.5/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #8B5CF6;
+            --secondary-color: #6B7280;
+            --background-color: #FFFFFF;
+            --card-background: #FFFFFF;
+            --text-color: #1F2937;
+            --border-color: #E5E7EB;
+            --hover-color: #F3F4F6;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            padding-top: 70px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+        }
+
+        .container {
+            max-width: 1000px;
+            padding: 0 20px;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: var(--card-shadow);
+            transition: transform var(--transition-speed);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: border-color var(--transition-speed);
+        }
+
+        .form-control:focus {
+            background-color: var(--card-background);
+            border-color: var(--primary-color);
+            color: var(--text-color);
+            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
+        }
+
+        .btn-primary {
+            background-color: #90afff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+        }
+
+        .btn-primary:hover {
+            background-color: #243ab6;
+            transform: translateY(-1px);
+        }
+
+        .filters-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group {
+            background-color: #F9FAFB;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .filter-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .custom-checkbox {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 1rem;
+        }
+
+        .result-card {
+            background-color: var(--card-background);
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 1rem;
+            transition: all var(--transition-speed);
+        }
+
+        .result-card:hover {
+            transform: translateX(4px);
+        }
+
+        .result-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            color: var(--secondary-color);
+        }
+
+        .meta-item i {
+            margin-right: 0.5rem;
+            width: 16px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .export-section {
+            background-color: #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .export-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .export-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .export-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .export-item i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        #search-strategy-container {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        #search-strategy {
+            background-color: #F9FAFB;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        #search-stats {
+            margin: 20px 0;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        #search-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        #search-btn {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        #search-btn:hover {
+            background-color: #6D28D9;
+            transform: translateY(-1px);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            min-width: 250px;
+            max-width: 400px;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success { background-color: #28a745; }
+        .toast.error { background-color: #dc3545; }
+        .toast.warning { background-color: #ffc107; color: #000; }
+        .toast.info { background-color: #17a2b8; }
+
+        .mode-container {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .analysis-chart {
+            min-height: 400px;
+            width: 100%;
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+        
+        .chart-container {
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;  /* 增加最小高度 */
+            height: 400px;      /* 设置固定高度 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;  /* 确保相对定位 */
+            display: flex;       /* 添加flex布局 */
+            flex-direction: column; /* 垂直排列 */
+        }
+        
+        .no-data-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        /* 调整图表卡片样式 */
+        .chart-card {
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-card .card-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .btn-check:checked + .btn-outline-light {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 添加热点作者表格样式 */
+        .table-responsive {
+            margin-top: 1rem;
+        }
+        
+        .table {
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        
+        .table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .table td {
+            vertical-align: middle;
+            background-color: var(--card-background);
+            border-color: var(--border-color);
+        }
+        
+        .author-rank {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .author-years {
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+        }
+
+        /* 添加搜索模式切换样式 */
+        .search-mode-toggle {
+            margin-bottom: 1rem;
+        }
+        
+        .search-mode-toggle .btn-group {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .search-mode-toggle .btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--primary-color);
+            background-color: white;
+            color: var(--primary-color);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-mode-toggle .btn:first-child {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .search-mode-toggle .btn:last-child {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .search-mode-toggle .btn:hover {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+        
+        .search-mode-toggle .btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+        }
+
+        .search-mode-toggle .btn.active:hover {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 8px rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .search-mode-toggle .btn.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .search-mode-toggle .btn.active:hover::before {
+            opacity: 1;
+        }
+
+        /* 添加鼠标指针样式 */
+        .search-mode-toggle .btn {
+            cursor: pointer;
+        }
+
+        .search-mode-toggle .btn.active {
+            cursor: default;
+        }
+
+        /* 调整输入框样式 */
+        #search-input {
+            min-height: 60px;
+            resize: vertical;
+            transition: min-height 0.3s ease;
+        }
+        
+        #search-input.paragraph-mode {
+            min-height: 120px;
+        }
+        
+        /* 段落模式的结果样式 */
+        .sentence-result {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .sentence-text {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .papers-list {
+            margin-top: 1rem;
+        }
+        
+        .paper-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            border-color: var(--border-color);
+        }
+        
+        .paper-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 添加页脚样式 */
+        .footer {
+            background: #ffffff;
+            color: rgb(0, 0, 0);
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .footer p {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .footer .developer-info {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .footer .wechat {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* 导出按钮样式 */
+        .export-btn {
+            position: relative;
+        }
+        
+        .export-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 250px;
+            background-color: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .export-dropdown.show {
+            display: block;
+        }
+        
+        .export-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .export-item:hover {
+            background-color: #F3F4F6;
+        }
+        
+        .export-item i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .progress-container {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .progress-percentage {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .progress-bar {
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .progress-message {
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+        
+        .progress-log-container {
+            background-color: #F9FAFB;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .progress-log {
+            font-family: monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        
+        .log-entry {
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            color: var(--secondary-color);
+            font-family: monospace;
+            margin-right: 8px;
+        }
+        
+        .log-message {
+            color: var(--text-color);
+        }
+        
+        .log-error {
+            color: #ff4d4d;
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .alert-info {
+            background-color: #EFF6FF;
+            border-color: #BFDBFE;
+            color: var(--text-color);
+        }
+
+        .form-text {
+            color: var(--secondary-color);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-check:checked + .btn-outline-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 修改图表主题配色 */
+        .visualMap {
+            color: var(--text-color);
+        }
+
+        /* 修改ECharts图表的文字颜色 */
+        .echarts-tooltip {
+            color: var(--text-color);
+        }
+
+        .echarts-title {
+            color: var(--text-color);
+        }
+
+        .echarts-legend {
+            color: var(--text-color);
+        }
+
+        /* 修改导航栏样式 */
+        .navbar-dark {
+            background-color: #FFFFFF !important;
+        }
+
+        .navbar-dark .navbar-brand {
+            color: var(--primary-color) !important;
+        }
+
+        /* 热点分析模式样式 */
+        #analysis-mode-container {
+            display: none;
+        }
+
+        #search-mode-container {
+            display: none;
+        }
+
+        #analysis-mode-container.active,
+        #search-mode-container.active {
+            display: block;
+        }
+
+        .analysis-form {
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .analysis-results {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);  /* 改为固定2列 */
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;  /* 增加最小高度 */
+            height: 400px;      /* 设置固定高度 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;  /* 确保相对定位 */
+            display: flex;       /* 添加flex布局 */
+            flex-direction: column; /* 垂直排列 */
+        }
+
+        /* 添加图表标题样式 */
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* 调整热点作者表格容器 */
+        .authors-container {
+            grid-column: span 2;  /* 跨越两列 */
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 确保图表实例容器有正确的尺寸 */
+        #heatmap-chart,
+        #wordcloud-chart,
+        #trend-chart {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;  /* 减小最小高度，留出标题空间 */
+            flex-grow: 1;       /* 允许图表容器占据剩余空间 */
+        }
+
+        .hot-authors-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--card-background);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .hot-authors-table th,
+        .hot-authors-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hot-authors-table th {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .hot-authors-table tr:hover {
+            background: var(--hover-color);
+        }
+
+        /* Toast样式 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            color: white;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.info {
+            background: var(--primary-color);
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        /* 段落模式的新增样式 */
+        .sentence-strategy-container {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .sentence-strategy-container:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 一键检索按钮样式 */
+        #execute-all-sentences-btn {
+            background-color: var(--primary-color);
+            border: none;
+            font-weight: 600;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #execute-all-sentences-btn:hover {
+            background-color: #6D28D9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        #execute-all-sentences-btn:disabled {
+            background-color: #a78bda;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        /* 句子标题样式优化 */
+        .sentence-header h6 {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .sentence-header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .sentence-text {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .sentence-strategy {
+            font-family: monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            background-color: #f8f9fa;
+        }
+
+        .sentence-results {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .sentence-stats {
+            background-color: #f0f4f8;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .paper-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sentence-export-dropdown .dropdown-menu {
+            min-width: 10rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .sentence-export-link {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .execute-sentence-btn {
+            transition: all 0.2s ease;
+        }
+
+        .execute-sentence-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 排序模式选择样式 */
+        .btn-group .btn-check + .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-group .btn-check:checked + .btn-outline-primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-group .btn-check + .btn-outline-primary:hover {
+            background-color: rgba(139, 92, 246, 0.1);
+        }
+
+        .btn-group .btn-check:checked + .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 8px rgba(139, 92, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .form-text {
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        /* 添加权威分数显示的样式 */
+        .authority-score {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .score-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .score-details {
+            padding-left: 10px;
+            color: #666;
+        }
+
+        .score-details div {
+            margin: 3px 0;
+        }
+
+        .final-score {
+            margin-top: 5px;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        /* 更新权威分数显示的样式 */
+        .authority-score {
+            margin: 8px 0;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border-left: 3px solid #28a745;
+        }
+
+        .score-details {
+            color: #666;
+        }
+
+        .score-row {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+            gap: 8px;
+        }
+
+        .score-label {
+            min-width: 100px;
+            color: #495057;
+        }
+
+        .score-value {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .score-result {
+            color: #666;
+        }
+
+        .score-row.final {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #ddd;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .metric.authority {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        /* 选题结果样式 */
+        #topic-result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        #topic-result-title {
+            color: #4a6bdf;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        
+        .topic-content {
+            line-height: 1.6;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        .topic-content h1, .topic-content h2, .topic-content h3 {
+            margin-top: 1.2em;
+            margin-bottom: 0.8em;
+            color: #4a6bdf;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        /* 综述大纲二级标题样式 */
+        .outline-heading {
+            margin: 15px 0;
+            padding: 8px 12px;
+            background-color: #f0f4ff;
+            border-left: 3px solid #4a6bdf;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .heading-text {
+            font-weight: 600;
+            color: #4a6bdf;
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .generate-section-btn {
+            font-size: 0.85rem;
+            padding: 3px 8px;
+            white-space: nowrap;
+        }
+        
+        /* 综述内容结果样式 */
+        .section-review-result {
+            margin-top: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section-review-content {
+            line-height: 1.8;
+            color: #333;
+            font-size: 0.95rem;
+            text-align: justify;
+        }
+        
+        /* 自动处理报告样式 */
+        .auto-process-report {
+            background-color: #f0f8ff;
+            border: 1px solid #b8daff;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .auto-process-report .card-header {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .auto-process-report .list-group-item {
+            background-color: transparent;
+            border-color: #b8daff;
+        }
+        
+        .auto-process-report .list-group-item a {
+            color: #0056b3;
+        }
+        
+        /* 大纲部分样式 */
+        .outline-sections {
+            margin-top: 20px;
+        }
+        
+        .outline-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .section-header h3 {
+            margin: 0;
+            color: #4a6bdf;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .section-content {
+            line-height: 1.6;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        /* 各部分特殊样式 */
+        .abstract-section {
+            background-color: #f8f9fa;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .introduction-section {
+            background-color: #f0f4ff;
+            border-left: 4px solid #4a6bdf;
+        }
+        
+        .research-section {
+            background-color: #f0f8ff;
+            border-left: 4px solid #007bff;
+        }
+        
+        /* 结论部分 */
+        .conclusion-section {
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+        }
+        
+        /* 全自动生成按钮样式 */
+        #auto-generate-all {
+            margin-top: 30px;
+            font-weight: 600;
+            padding: 10px;
+            background-color: #4a6bdf;
+            border-color: #4a6bdf;
+        }
+        
+        #auto-generate-all:hover {
+            background-color: #3a56bf;
+            border-color: #3a56bf;
+        }
+        
+        /* 按钮脉冲动画效果 */
+        @keyframes btn-pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+                transform: scale(1);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+                transform: scale(1.05);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+                transform: scale(1);
+            }
+        }
+        
+        .btn-pulse {
+            animation: btn-pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">
+                    <!img src="/static/img/logo.png" alt="NNScholar Logo" height="30"!>
+                    NNScholar
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary active" data-mode="search">文献检索</button>
+                        <button type="button" class="btn btn-primary" data-mode="analysis">热点分析</button>
+                    </div>
+                </div>
+        </div>
+    </nav>
+
+        <!-- 文献检索模式 -->
+        <div id="search-mode-container" class="active">
+            <div class="card">
+                <div class="card-body">
+                <h5 class="card-title">文献检索</h5>
+                                    <div class="form-group">
+                    <label for="search-input" class="form-label">检索内容</label>
+                    <textarea class="form-control" id="search-input" rows="3" placeholder="请输入检索内容..."></textarea>
+                        </div>
+                        
+                <div class="btn-group mb-3" role="group">
+                    <button type="button" class="btn btn-primary active" data-mode="single">单句模式</button>
+                    <button type="button" class="btn btn-primary" data-mode="paragraph">段落模式</button>
+                        </div>
+
+                <div class="filters-section">
+                            <div class="filter-group">
+                                <h6 class="filter-title">发表年份</h6>
+                                <div class="d-flex gap-2">
+                                    <input type="number" id="year-start" class="form-control form-control-sm" placeholder="起始年份">
+                                    <span class="align-self-center">-</span>
+                                    <input type="number" id="year-end" class="form-control form-control-sm" placeholder="结束年份">
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <h6 class="filter-title">影响因子</h6>
+                                <input type="number" id="min-if" class="form-control form-control-sm" placeholder="最低影响因子" step="0.1">
+                            </div>
+
+                            <div class="filter-group">
+                                <h6 class="filter-title">JCR分区</h6>
+                                <div class="checkbox-group">
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="jcr" value="Q1"> Q1
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="jcr" value="Q2"> Q2
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="jcr" value="Q3"> Q3
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="jcr" value="Q4"> Q4
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <h6 class="filter-title">中科院分区</h6>
+                                <div class="checkbox-group">
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="cas" value="1"> 1区
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="cas" value="2"> 2区
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="cas" value="3"> 3区
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="cas" value="4"> 4区
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="filter-group">
+                                <h6 class="filter-title">显示数量</h6>
+                                <select id="papers-limit" class="form-select form-select-sm">
+                                    <option value="10">10篇</option>
+                                    <option value="20">20篇</option>
+                                    <option value="50">50篇</option>
+                                    <option value="100">100篇</option>
+                                    <option value="500">500篇</option>
+                                </select>
+            </div>
+
+                            <div class="filter-group">
+                                <h6 class="filter-title">排序模式</h6>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="sort-mode" id="sort-relevance" value="relevance" checked>
+                                    <label class="btn btn-outline-primary" for="sort-relevance">相关度优先</label>
+                                    
+                                    <input type="radio" class="btn-check" name="sort-mode" id="sort-authority" value="authority">
+                                    <label class="btn btn-outline-primary" for="sort-authority">权威文献优先</label>
+                                </div>
+                                <small class="form-text text-muted mt-1">
+                                    权威文献优先：影响因子(60%) + 相关度(40%)
+                                </small>
+            </div>
+        </div>
+
+                <button id="search-btn" class="btn btn-primary w-100">
+                    <i class="fas fa-magic me-2"></i>生成检索策略
+                </button>
+                </div>
+                    </div>
+                    </div>
+                    
+        <div id="search-strategy-container" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">检索策略</h5>
+                <button id="execute-strategy-btn" class="btn btn-primary" style="display: none;">
+                    <i class="fas fa-search me-2"></i>执行检索策略
+                    </button>
+                            </div>
+            <!-- 单句模式的检索策略 -->
+            <div id="single-strategy-container" style="display: none;">
+                <textarea id="search-strategy" class="form-control" rows="6" readonly></textarea>
+                <div class="d-grid gap-2 mt-3">
+                    <button id="single-execute-btn" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>执行检索策略
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 段落模式的检索策略 -->
+            <div id="paragraph-strategies-container" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <button id="execute-all-sentences-btn" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>一键检索全部句子
+                        </button>
+                    </div>
+                    <button id="export-all-paragraph-btn" class="btn btn-outline-success">
+                        <i class="fas fa-file-export me-2"></i>导出所有结果
+                    </button>
+                </div>
+                <div id="sentence-strategies" class="sentence-strategies">
+                    <!-- 这里将动态添加每个句子的策略 -->
+                </div>
+                            </div>
+                        </div>
+                        
+        <!-- 修改进度显示容器的结构 -->
+        <div id="searchProgress" class="progress-container mt-4" style="display: none;">
+            <div class="progress-header mb-3">
+                <h6 class="progress-title mb-0">
+                    <i class="fas fa-tasks me-2"></i>搜索进度
+                </h6>
+                <div class="progress-percentage">0%</div>
+            </div>
+                        
+            <div class="progress mb-3" style="height: 6px;">
+                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <div class="progress-message mb-3">准备开始搜索...</div>
+            
+            <div class="progress-log-container">
+                <div class="progress-log-header mb-2">
+                    <strong><i class="fas fa-list-ul me-2"></i>详细日志</strong>
+                </div>
+                <div class="progress-log" style="max-height: 200px; overflow-y: auto;">
+                    <!-- 日志条目将在这里动态添加 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="search-stats" style="display: none;">
+            <div class="alert alert-info">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="m-0">检索统计</h6>
+            <div class="export-btn">
+                        <button id="stats-export-btn" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-file-export me-1"></i>导出
+                </button>
+                        <div id="stats-export-dropdown" class="export-dropdown">
+                    <div class="export-item" data-type="initial_word">
+                        <i class="fas fa-file-word"></i>初始检索报告文档
+                    </div>
+                    <div class="export-item" data-type="filtered_word">
+                        <i class="fas fa-file-word"></i>筛选后检索报告文档
+                    </div>
+                    <div class="export-item" data-type="initial_excel">
+                        <i class="fas fa-file-excel"></i>初始检索表格
+                    </div>
+                    <div class="export-item" data-type="filtered_excel">
+                        <i class="fas fa-file-excel"></i>筛选后检索表格
+                    </div>
+                    <div class="export-item" data-type="filtered_excel_pro">
+                        <i class="fas fa-file-excel"></i>检索表格Pro
+                    </div>
+                    <div class="export-item" data-type="filtered_titles">
+                        <i class="fas fa-file-word"></i>筛选后标题文档
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-search me-2"></i>
+                            初始检索到相关文献：<strong id="total-count">0</strong> 篇
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-filter me-2"></i>
+                            符合筛选条件的文献：<strong id="filtered-count">0</strong> 篇
+                        </span>
+                    </div>
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                        <button id="generate-review-topic" class="btn btn-sm btn-outline-primary"
+                                data-bs-toggle="tooltip" data-bs-placement="top" 
+                                title="分析大约需要1分钟时间">
+                            <i class="fas fa-lightbulb me-1"></i>基于真实文献的综述选题
+                        </button>
+                        <button id="generate-research-topic" class="btn btn-sm btn-outline-success"
+                                data-bs-toggle="tooltip" data-bs-placement="top" 
+                                title="分析大约需要1分钟时间">
+                            <i class="fas fa-flask me-1"></i>基于真实文献的论著选题
+                        </button>
+                        <button id="generate-outline" class="btn btn-sm btn-outline-info"
+                                data-bs-toggle="tooltip" data-bs-placement="top" 
+                                title="综述生成包括大纲生成、检索分析相关文献、内容生成，完成大约需要5-8分钟时间">
+                            <i class="fas fa-list me-1"></i>基于真实文献的综述生成
+                        </button>
+                    </div>
+                    <div id="topic-result" class="mt-3 p-3 border rounded" style="display: none;">
+                        <h6 class="mb-3 text-primary" id="topic-result-title">选题建议</h6>
+                        <div id="topic-result-content" class="topic-content"></div>
+                        <div class="text-end mt-2">
+                            <small class="text-muted">由AI生成，仅供参考</small>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                            style="width: 0%"
+                            aria-valuenow="0" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        筛选条件包括：年份、影响因子、JCR分区、CAS分区
+                    </div>
+                </div>
+            </div>
+    </div>
+    <!-- 热点分析模式 -->
+    <div id="analysis-mode-container">
+                                <div class="card">
+                                    <div class="card-body">
+                <h5 class="card-title">期刊热点分析</h5>
+                <div class="analysis-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="journal-name">期刊名称</label>
+                                <input type="text" class="form-control" id="journal-name" placeholder="请输入期刊名称">
+                                        </div>
+                                            </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="keywords">关键词（可选，多个关键词用逗号分隔）</label>
+                                <input type="text" class="form-control" id="keywords" placeholder="例如：cancer, therapy">
+                                        </div>
+                                                </div>
+                                            </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="start-year">起始年份</label>
+                                <input type="number" class="form-control" id="start-year" placeholder="例如：2020">
+                                        </div>
+                                                                </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="end-year">结束年份</label>
+                                <input type="number" class="form-control" id="end-year" placeholder="例如：2024">
+                                                                </div>
+                                                                </div>
+                                                                </div>
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <button type="button" class="btn btn-primary" id="analyze-btn">开始分析</button>
+                </div>
+            </div>
+    </div>
+
+                <div class="analysis-results" style="display: none;">
+                    <div class="chart-container">
+                        <h4 class="chart-title">热点主题热力图</h4>
+                        <div id="heatmap-chart"></div>
+                                    </div>
+                    <div class="chart-container">
+                        <h4 class="chart-title">关键词词云</h4>
+                        <div id="wordcloud-chart"></div>
+                                    </div>
+                    <div class="chart-container">
+                        <h4 class="chart-title">研究趋势</h4>
+                        <div id="trend-chart"></div>
+                                    </div>
+                    <div class="authors-container">
+                        <h4 class="chart-title">热点作者排名</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>排名</th>
+                                        <th>作者</th>
+                                        <th>发文数量</th>
+                                        <th>第一作者</th>
+                                        <th>通讯作者</th>
+                                        <th>发表年份</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hot-authors-body">
+                                </tbody>
+                            </table>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>
+        <div id="results-container">
+            <!-- 搜索结果将在这里动态加载 -->
+        </div>
+
+    <div id="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>正在加载...</p>
+        </div>
+        
+        <!-- 添加页脚 -->
+        <footer class="footer mt-5">
+            <div class="container">
+                <p>NNScholar - 医学文献智能检索与分析系统</p>
+            <p class="developer-info">Version 3.53</p>
+            </div>
+        </footer>
+
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="/static/js/session.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script>
+        // 存储用户ID（如果有）
+        const userId = "{{ user_id }}";
+        
+        // 将userId存储在localStorage中，以便其他页面使用
+        if (userId) {
+            localStorage.setItem('nnscholar_user_id', userId);
+            console.log('用户ID已存储:', userId);
+        } else {
+            console.log('未提供用户ID');
+        }
+        
+            // Toast提示函数
+            function showToast(message, type = 'info') {
+                const toastContainer = document.querySelector('.toast-container') || (() => {
+                    const container = document.createElement('div');
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                    return container;
+                })();
+
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 100);
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        toastContainer.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+
+            // 显示加载状态
+            function showLoading(message = '正在加载...') {
+            const loading = document.getElementById('loading');
+                if (loading) {
+                    loading.querySelector('p').textContent = message;
+                    loading.style.display = 'block';
+                }
+            }
+
+            // 隐藏加载状态
+            function hideLoading() {
+                const loading = document.getElementById('loading');
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+            }
+
+    // 添加全局变量存储句子数据
+    let sentencesData = [];
+
+    // 等待页面加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化所有tooltip
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // 生成一个随机的会话ID
+        const sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
+        
+        // 初始化Socket.IO连接
+        const socket = io({
+            transports: ['websocket'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 20000,
+            query: { sessionId: sessionId }
+        });
+
+        // 添加连接事件处理
+        socket.on('connect', () => {
+            console.log('Socket.IO连接成功，会话ID:', sessionId);
+            showToast('服务器连接成功', 'success');
+            
+            // 如果当前在分析模式，重新初始化分析相关的状态
+            const analysisContainer = document.getElementById('analysis-mode-container');
+            if (analysisContainer.classList.contains('active')) {
+                const analysisResults = document.querySelector('.analysis-results');
+                if (analysisResults) {
+                    analysisResults.style.display = 'none';
+                }
+            }
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Socket.IO连接错误:', error);
+            showToast('连接服务器失败，正在重试...', 'error');
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log('Socket.IO断开连接:', reason);
+            showToast('服务器连接断开，正在重连...', 'warning');
+            if (reason === 'io server disconnect') {
+                socket.connect();
+            }
+            
+            // 如果当前在分析模式，显示断开连接提示
+            const analysisContainer = document.getElementById('analysis-mode-container');
+            if (analysisContainer.classList.contains('active')) {
+                showToast('服务器连接断开，分析功能可能受影响', 'warning');
+            }
+        });
+
+        socket.on('reconnect', (attemptNumber) => {
+            console.log('Socket.IO重连成功，尝试次数:', attemptNumber);
+            showToast('服务器重连成功', 'success');
+        });
+
+        socket.on('reconnect_error', (error) => {
+            console.error('Socket.IO重连失败:', error);
+            showToast('服务器重连失败，请刷新页面', 'error');
+        });
+
+        // 创建一个通用的请求头
+        const getHeaders = () => {
+            const headers = {
+                'Content-Type': 'application/json',
+                'sid': sessionId
+            };
+            
+            // 从localStorage获取userId
+            const storedUserId = localStorage.getItem('nnscholar_user_id');
+            if (storedUserId) {
+                headers['userId'] = storedUserId;
+                console.log('添加userId到请求头:', storedUserId);
+            } else {
+                console.log('localStorage中未找到userId');
+            }
+            
+            console.log('完整请求头:', headers);
+            return headers;
+        };
+
+        // 监听进度更新事件
+        socket.on('search_progress', function(data) {
+            console.log('收到搜索进度更新:', data);
+            const progressContainer = document.getElementById('searchProgress');
+            const progressBar = progressContainer.querySelector('.progress-bar');
+            const progressPercentage = progressContainer.querySelector('.progress-percentage');
+            const progressMessage = progressContainer.querySelector('.progress-message');
+            const progressLog = progressContainer.querySelector('.progress-log');
+
+            // 显示进度容器
+            progressContainer.style.display = 'block';
+
+            // 更新进度条和百分比
+            const percentage = Math.min(100, Math.max(0, data.percentage || 0));
+            progressBar.style.width = `${percentage}%`;
+            progressBar.setAttribute('aria-valuenow', percentage);
+            progressPercentage.textContent = `${Math.round(percentage)}%`;
+
+            // 更新进度消息
+            if (data.message) {
+                progressMessage.textContent = data.message;
+            }
+
+            // 添加日志条目
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            
+            if (data.stage === 'complete') {
+                // 检索完成
+                logEntry.innerHTML = `
+                    <span class="log-time">[${time}]</span>
+                    <span class="log-message" style="color: #28a745;">✓ ${data.message || '检索完成'}</span>
+                `;
+                // 保存导出文件路径
+                if (data.files) {
+                    window.currentExportFiles = data.files;
+                    console.log('已保存导出文件路径:', data.files);
+                }
+            } else if (data.stage === 'error') {
+                // 发生错误
+                logEntry.innerHTML = `
+                    <span class="log-time">[${time}]</span>
+                    <span class="log-message log-error">✗ ${data.message || '发生错误'}</span>
+                `;
+            } else {
+                // 常规进度更新
+                logEntry.innerHTML = `
+                    <span class="log-time">[${time}]</span>
+                    <span class="log-message">${data.message || '正在处理...'}</span>
+                `;
+            }
+            
+            progressLog.appendChild(logEntry);
+            progressLog.scrollTop = progressLog.scrollHeight;
+        });
+
+        // 监听错误事件
+        socket.on('search_error', function(data) {
+            console.error('收到搜索错误:', data);
+            const progressLog = document.querySelector('.progress-log');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            logEntry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-message log-error">✗ ${data.error || '未知错误'}</span>
+            `;
+            progressLog.appendChild(logEntry);
+            progressLog.scrollTop = progressLog.scrollHeight;
+            showToast(data.error || '搜索出错', 'error');
+        });
+
+        // 初始化导航栏模式切换
+        const navModeButtons = document.querySelectorAll('.navbar-nav [data-mode]');
+        const searchContainer = document.getElementById('search-mode-container');
+        const analysisContainer = document.getElementById('analysis-mode-container');
+        const resultsContainer = document.getElementById('results-container');
+        const searchStrategyContainer = document.getElementById('search-strategy-container');
+        const searchProgressContainer = document.getElementById('searchProgress');
+        const searchStatsContainer = document.getElementById('search-stats');
+
+        // 设置初始状态
+        searchContainer.classList.add('active');
+        analysisContainer.classList.remove('active');
+
+        // 导航栏模式切换处理
+        navModeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const mode = this.dataset.mode;
+                navModeButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                if (mode === 'search') {
+                    // 切换到检索模式
+                    searchContainer.classList.add('active');
+                    analysisContainer.classList.remove('active');
+                    // 清理分析模式的状态
+                    const analysisResults = document.querySelector('.analysis-results');
+                    if (analysisResults) {
+                        analysisResults.style.display = 'none';
+                    }
+                    // 重置分析表单
+                    document.getElementById('journal-name').value = '';
+                    document.getElementById('keywords').value = '';
+                    document.getElementById('start-year').value = '';
+                    document.getElementById('end-year').value = '';
+                    
+                    // 恢复检索模式相关容器的显示
+                    resultsContainer.style.display = 'block';
+                    if (document.getElementById('search-strategy').value.trim()) {
+                        searchStrategyContainer.style.display = 'block';
+                    }
+                } else {
+                    // 切换到分析模式
+                    searchContainer.classList.remove('active');
+                    analysisContainer.classList.add('active');
+                    // 清理检索模式的状态
+                    searchStrategyContainer.style.display = 'none';
+                    searchProgressContainer.style.display = 'none';
+                    searchStatsContainer.style.display = 'none';
+                    resultsContainer.style.display = 'none';
+                }
+            });
+        });
+
+        // 搜索模式切换（单句/段落）
+        const searchModeButtons = document.querySelectorAll('.btn-group [data-mode]');
+        let currentSearchMode = 'single';
+
+        searchModeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const mode = this.dataset.mode;
+                searchModeButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                currentSearchMode = mode;
+                    
+                // 调整输入框高度
+                const searchInput = document.getElementById('search-input');
+                if (mode === 'paragraph') {
+                        searchInput.classList.add('paragraph-mode');
+                    } else {
+                        searchInput.classList.remove('paragraph-mode');
+                }
+                });
+            });
+
+        // 生成检索策略按钮事件处理
+        const searchBtn = document.getElementById('search-btn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', async function() {
+                const query = document.getElementById('search-input').value.trim();
+                if (!query) {
+                    showToast('请输入检索内容', 'error');
+                    return;
+                }
+                
+                // 清空并显示进度容器
+                const progressContainer = document.getElementById('searchProgress');
+                const progressLog = progressContainer.querySelector('.progress-log');
+                progressLog.innerHTML = '';
+                progressContainer.style.display = 'block';
+
+                // 获取筛选条件
+                const filters = {
+                    year_start: document.getElementById('year-start').value,
+                    year_end: document.getElementById('year-end').value,
+                    min_if: document.getElementById('min-if').value,
+                    jcr_quartile: Array.from(document.querySelectorAll('input[name="jcr"]:checked')).map(cb => cb.value),
+                    cas_quartile: Array.from(document.querySelectorAll('input[name="cas"]:checked')).map(cb => cb.value),
+                    papers_limit: document.getElementById('papers-limit').value,
+                    sort_mode: document.querySelector('input[name="sort-mode"]:checked').value // 使用筛选条件附近的排序选择
+                };
+
+                try {
+                    const response = await fetch('/api/generate_strategy', {
+                            method: 'POST',
+                        headers: getHeaders(),
+                            body: JSON.stringify({
+                            query: query,
+                            mode: currentSearchMode,
+                            filters: filters
+                            })
+                        });
+
+                    // 尝试解析JSON响应，无论状态码如何
+                    const data = await response.json();
+                    
+                    // 检查是否需要登录
+                    if (data.error === 'login_required' && data.redirect_url) {
+                        showToast('请先登录后再使用此功能', 'warning');
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1500);
+                        return;
+                    }
+                    
+                    // 检查是否需要充值
+                    if (data.error === 'insufficient_credit' && data.redirect_url) {
+                        showToast('您的积分不足，请先充值', 'warning');
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1500);
+                        return;
+                    }
+                    
+                    if (!data.success) {
+                        throw new Error(data.error || '生成检索策略失败');
+                    }
+
+                    // 显示检索策略容器
+                    const strategyContainer = document.getElementById('search-strategy-container');
+                    const singleStrategyContainer = document.getElementById('single-strategy-container');
+                    const paragraphStrategiesContainer = document.getElementById('paragraph-strategies-container');
+                    const sentenceStrategiesContainer = document.getElementById('sentence-strategies');
+                    const strategyTextarea = document.getElementById('search-strategy');
+                    
+                    if (currentSearchMode === 'paragraph') {
+                        // 段落模式：为每个句子创建独立的策略框
+                        singleStrategyContainer.style.display = 'none';
+                        paragraphStrategiesContainer.style.display = 'block';
+                        
+                        // 清空之前的内容
+                        sentenceStrategiesContainer.innerHTML = '';
+                        
+                        // 存储句子数据供一键检索使用
+                        sentencesData = data.sentences;
+                        
+                        // 为每个句子创建独立策略框和执行按钮
+                        data.sentences.forEach((sentence, index) => {
+                            const sentenceDiv = document.createElement('div');
+                            sentenceDiv.className = 'sentence-strategy-container mb-4';
+                            sentenceDiv.innerHTML = `
+                                <div class="sentence-header d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">句子 ${index + 1}</h6>
+                                    <button class="execute-sentence-btn btn btn-primary btn-sm" data-index="${index}">
+                                        <i class="fas fa-search me-1"></i>执行检索
+                                    </button>
+                                </div>
+                                <div class="sentence-text mb-2 p-2 bg-light rounded">${sentence.text}</div>
+                                <textarea class="form-control sentence-strategy" rows="4" readonly>${sentence.search_strategy}</textarea>
+                                <div class="sentence-results mt-3" style="display: none;">
+                                    <!-- 检索结果将在这里显示 -->
+                                </div>
+                            `;
+                            sentenceStrategiesContainer.appendChild(sentenceDiv);
+                            
+                            // 为每个句子的执行按钮添加事件处理器
+                            const executeBtn = sentenceDiv.querySelector('.execute-sentence-btn');
+                            executeBtn.addEventListener('click', async function() {
+                                const sentenceIndex = this.getAttribute('data-index');
+                                const sentenceStrategy = data.sentences[sentenceIndex].search_strategy;
+                                const sentenceText = data.sentences[sentenceIndex].text;
+                                
+                                // 获取筛选条件（包括排序模式）
+                                const filters = {
+                                    year_start: document.getElementById('year-start').value,
+                                    year_end: document.getElementById('year-end').value,
+                                    min_if: document.getElementById('min-if').value,
+                                    jcr_quartile: Array.from(document.querySelectorAll('input[name="jcr"]:checked')).map(cb => cb.value),
+                                    cas_quartile: Array.from(document.querySelectorAll('input[name="cas"]:checked')).map(cb => cb.value),
+                                    papers_limit: document.getElementById('papers-limit').value,
+                                    sort_mode: document.querySelector('input[name="sort-mode"]:checked').value
+                                };
+                                
+                                // 显示进度
+                                progressContainer.style.display = 'block';
+                                progressLog.innerHTML = '';
+                                const progressBar = progressContainer.querySelector('.progress-bar');
+                                const progressPercentage = progressContainer.querySelector('.progress-percentage');
+                                const progressMessage = progressContainer.querySelector('.progress-message');
+                                
+                                progressBar.style.width = '0%';
+                                progressBar.setAttribute('aria-valuenow', 0);
+                                progressPercentage.textContent = '0%';
+                                progressMessage.textContent = `正在执行句子 ${Number(sentenceIndex) + 1} 的检索策略...`;
+                                
+                                try {
+                                    showLoading(`正在执行句子 ${Number(sentenceIndex) + 1} 的检索...`);
+                                    
+                                    const response = await fetch('/api/search-sentence', {
+                                        method: 'POST',
+                                        headers: getHeaders(),
+                                        body: JSON.stringify({
+                                            strategy: sentenceStrategy,
+                                            filters: filters
+                                        })
+                                    });
+                                    
+                                    if (!response.ok) {
+                                        throw new Error(await response.text());
+                                    }
+                                    
+                                    const result = await response.json();
+                                    
+                                    // 检查是否需要充值
+                                    if (result.error === 'insufficient_credit' && result.redirect_url) {
+                                        showToast('您的积分不足，请先充值', 'warning');
+                                        setTimeout(() => {
+                                            window.location.href = result.redirect_url;
+                                        }, 1500);
+                                        return;
+                                    }
+                                    
+                                    if (result.success) {
+                                        // 保存检索结果到全局变量
+                                        if (!window.sentenceSearchResults) {
+                                            window.sentenceSearchResults = [];
+                                        }
+                                        window.sentenceSearchResults[sentenceIndex] = result;
+                                        
+                                        // 输出日志，检查返回的数据字段情况
+                                        if (result.data && result.data.length > 0) {
+                                            console.log(`检查第一篇文章字段情况:`);
+                                            console.log(`relevance: ${result.data[0].relevance !== undefined ? result.data[0].relevance : '未定义'}`);
+                                            console.log(`relevance_score: ${result.data[0].relevance_score !== undefined ? result.data[0].relevance_score : '未定义'}`);
+                                            console.log(`authority_score: ${result.data[0].authority_score !== undefined ? result.data[0].authority_score : '未定义'}`);
+                                            
+                                            // 检查权威分数计算信息
+                                            console.log(`authority_calculation是否存在: ${result.data[0].authority_calculation !== undefined}`);
+                                            if (result.data[0].authority_calculation) {
+                                                console.log('权威分数计算详情:', JSON.stringify(result.data[0].authority_calculation));
+                                            } else {
+                                                console.log('权威分数计算详情不存在');
+                                                // 尝试手动添加计算信息
+                                                if (result.data[0].authority_score !== undefined) {
+                                                    console.log('正在手动创建权威分数计算信息...');
+                                                    // 创建一个基本的计算信息对象
+                                                    result.data[0].authority_calculation = {
+                                                        current_if: result.data[0].journal_info?.impact_factor || 0,
+                                                        max_if: 10.0, // 一个合理的默认值
+                                                        if_score: result.data[0].authority_score * 0.6 * 2, // 估算的IF得分
+                                                        relevance_score: result.data[0].relevance_score || result.data[0].relevance || 0,
+                                                        if_weight: 0.6,
+                                                        relevance_weight: 0.4,
+                                                        if_contribution: result.data[0].authority_score * 0.6,
+                                                        relevance_contribution: result.data[0].authority_score * 0.4,
+                                                        final_score: result.data[0].authority_score
+                                                    };
+                                                    console.log('手动创建的计算信息:', JSON.stringify(result.data[0].authority_calculation));
+                                                }
+                                            }
+                                            
+                                            // 记录传递的排序模式
+                                            console.log(`传递的排序模式: ${filters.sort_mode || '未指定'}`);
+                                        }
+                                        
+                                        // 显示此句子的检索结果
+                                        const sentenceDiv = button.closest('.sentence-strategy-container');
+                                        const resultsContainer = sentenceDiv.querySelector('.sentence-results');
+                                        resultsContainer.style.display = 'block';
+                                        resultsContainer.innerHTML = '';
+                                        
+                                        const statsHtml = `
+                                            <div class="sentence-stats mb-3">
+                                                <div class="d-flex justify-content-between">
+                                                    <span>初始检索到文献：<strong>${result.total_count || 0}</strong> 篇</span>
+                                                    <span>筛选后文献：<strong>${result.filtered_count || 0}</strong> 篇</span>
+                                                </div>
+                                            </div>
+                                        `;
+                                        resultsContainer.insertAdjacentHTML('beforeend', statsHtml);
+                                        
+                                        // 显示文献列表
+                                        if (result.data && result.data.length > 0) {
+                                            // 修复权威分数计算信息，确保相关度得分正确
+                                            result.data = fixAuthorityCalculation(result.data);
+                                            
+                                            // 获取当前排序模式
+                                            const sortMode = filters.sort_mode || 'relevance';
+                                            console.log(`句子 ${Number(sentenceIndex) + 1} 使用排序模式: ${sortMode}`);
+                                            
+                                            // 根据排序模式对结果进行排序
+                                            const sortedPapers = [...result.data].sort((a, b) => {
+                                                if (sortMode === 'authority') {
+                                                    // 权威文献优先模式：按权威分数排序
+                                                    const aScore = a.authority_score !== undefined ? parseFloat(a.authority_score) : 0;
+                                                    const bScore = b.authority_score !== undefined ? parseFloat(b.authority_score) : 0;
+                                                    return (bScore || 0) - (aScore || 0); // 从高到低排序
+                                                } else {
+                                                    // 相关度优先模式：按相关度排序
+                                                    const aScore = a.relevance_score !== undefined ? parseFloat(a.relevance_score) : (a.relevance !== undefined ? parseFloat(a.relevance) : 0);
+                                                    const bScore = b.relevance_score !== undefined ? parseFloat(b.relevance_score) : (b.relevance !== undefined ? parseFloat(b.relevance) : 0);
+                                                    return (bScore || 0) - (aScore || 0); // 从高到低排序
+                                                }
+                                            });
+                                            
+                                            // 记录排序情况
+                                            console.log(`句子 ${Number(sentenceIndex) + 1} 排序后前5篇文章情况:`);
+                                            sortedPapers.slice(0, 5).forEach((paper, idx) => {
+                                                const relevanceScore = paper.relevance_score !== undefined ? paper.relevance_score : paper.relevance;
+                                                const authorityScore = paper.authority_score !== undefined ? paper.authority_score : 'N/A';
+                                                console.log(`第${idx + 1}篇文章 - 相关度: ${relevanceScore}, 权威分数: ${authorityScore}`);
+                                            });
+                                            
+                                            // 更新保存的结果，确保已排序
+                                            window.sentenceSearchResults[sentenceIndex].data = sortedPapers;
+                                            
+                                            const papersListHtml = `
+                                                <div class="papers-list">
+                                                    ${sortedPapers.map(paper => {
+                                                        const journalInfo = paper.journal_info || {};
+                                                        // 确定使用哪个相关度字段
+                                                        const relevanceScore = paper.relevance_score !== undefined ? paper.relevance_score : (paper.relevance !== undefined ? paper.relevance : 0);
+                                                        return `
+                                                            <div class="paper-item mb-3 p-3 border rounded">
+                                                                <div class="paper-title mb-2">
+                                                                    <a href="${paper.url || '#'}" target="_blank" class="text-decoration-none">
+                                                                        ${paper.title}
+                                                                    </a>
+                                                                </div>
+                                                                <div class="paper-authors text-muted mb-1 small">
+                                                                    ${paper.authors ? paper.authors.join(', ') : 'N/A'}
+                                                                </div>
+                                                                <div class="paper-journal text-muted mb-2 small">
+                                                                    <i class="fas fa-book me-1"></i>${journalInfo.title || 'N/A'}, ${paper.pub_year || 'N/A'}
+                                                                </div>
+                                                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                                                    <span class="badge bg-primary">
+                                                                        IF: ${journalInfo.impact_factor || 'N/A'}
+                                                                    </span>
+                                                                    <span class="badge bg-info">
+                                                                        JCR: ${journalInfo.jcr_quartile || 'N/A'}
+                                                                    </span>
+                                                                    <span class="badge bg-success">
+                                                                        CAS: ${journalInfo.cas_quartile || 'N/A'}
+                                                                    </span>
+                                                                    <span class="badge bg-warning text-dark">
+                                                                        相关度: ${relevanceScore || 'N/A'}%
+                                                                    </span>
+                                                                    ${paper.authority_score ? `
+                                                                    <span class="badge bg-primary text-light">
+                                                                        权威分数: ${paper.authority_score}
+                                                                    </span>
+                                                                    ` : ''}
+                                                                </div>
+                                                                
+                                                                ${paper.authority_score !== undefined ? `
+                                                                <div class="authority-score mt-2">
+                                                                    <div class="score-title">
+                                                                        <i class="fas fa-crown me-1 text-warning"></i>权威分数计算过程:
+                                                                    </div>
+                                                                    <div class="score-details">
+                                                                        <div class="score-row">
+                                                                            <span class="score-label">当前影响因子:</span>
+                                                                            <span class="score-value">${paper.authority_calculation && paper.authority_calculation.current_if !== undefined ? paper.authority_calculation.current_if : journalInfo.impact_factor || '未知'}</span>
+                                                                            <span class="score-result">(最高影响因子: ${paper.authority_calculation && paper.authority_calculation.max_if !== undefined ? paper.authority_calculation.max_if : '未知'})</span>
+                                                                        </div>
+                                                                        <div class="score-row">
+                                                                            <span class="score-label">影响因子得分:</span>
+                                                                            <span class="score-value">${paper.authority_calculation && paper.authority_calculation.if_score !== undefined ? paper.authority_calculation.if_score : '未计算'}</span>
+                                                                            <span class="score-result">× 权重 ${paper.authority_calculation && paper.authority_calculation.if_weight !== undefined ? paper.authority_calculation.if_weight : 0.6} = ${paper.authority_calculation && paper.authority_calculation.if_contribution !== undefined ? paper.authority_calculation.if_contribution : '未计算'}</span>
+                                                                        </div>
+                                                                        <div class="score-row">
+                                                                            <span class="score-label">相关度得分:</span>
+                                                                            <span class="score-value">${paper.authority_calculation && paper.authority_calculation.relevance_score !== undefined ? paper.authority_calculation.relevance_score : (paper.relevance_score !== undefined ? paper.relevance_score : paper.relevance || '未知')}</span>
+                                                                            <span class="score-result">× 权重 ${paper.authority_calculation && paper.authority_calculation.relevance_weight !== undefined ? paper.authority_calculation.relevance_weight : 0.4} = ${paper.authority_calculation && paper.authority_calculation.relevance_contribution !== undefined ? paper.authority_calculation.relevance_contribution : '未计算'}</span>
+                                                                        </div>
+                                                                        <div class="score-row final">
+                                                                            <span class="score-label">最终权威分数:</span>
+                                                                            <span class="score-value">${paper.authority_score}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                ` : ''}
+                                                            </div>
+                                                        `;
+                                                    }).join('')}
+                                                </div>
+                                            `;
+                                            resultsContainer.insertAdjacentHTML('beforeend', papersListHtml);
+                                        } else {
+                                            resultsContainer.insertAdjacentHTML('beforeend', `
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-info-circle me-2"></i>
+                                                    未找到符合条件的文献
+                                                </div>
+                                            `);
+                                        }
+                                        
+                                        // 添加导出按钮
+                                        if (result.data && result.data.length > 0) {
+                                            const exportHtml = `
+                                                <div class="d-flex justify-content-end mt-3">
+                                                    <div class="dropdown sentence-export-dropdown">
+                                                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                            <i class="fas fa-download me-1"></i>导出此句子结果
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item sentence-export-link" href="/api/export-sentence/${sentenceIndex}/excel" download>Excel导出</a></li>
+                                                            <li><a class="dropdown-item sentence-export-link" href="/api/export-sentence/${sentenceIndex}/word" download>Word导出</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            `;
+                                            resultsContainer.insertAdjacentHTML('beforeend', exportHtml);
+                                        }
+                                        
+                                        // 滚动到结果区域
+                                        resultsContainer.scrollIntoView({ behavior: 'smooth' });
+                                        
+                                        showToast(`句子 ${Number(sentenceIndex) + 1} 检索完成`, 'success');
+                                    } else {
+                                        throw new Error(result.error || '检索失败');
+                                    }
+                                } catch (error) {
+                                    console.error('Search failed:', error);
+                                    showToast(error.message || '检索失败，请稍后重试', 'error');
+                                } finally {
+                                    hideLoading();
+                                }
+                            });
+                        });
+                    } else {
+                        // 单句模式：显示单个检索策略
+                        paragraphStrategiesContainer.style.display = 'none';
+                        singleStrategyContainer.style.display = 'block';
+                        strategyTextarea.value = data.search_strategy;
+                    }
+                    
+                    strategyContainer.style.display = 'block';
+                    showToast('检索策略生成完成', 'success');
+                } catch (error) {
+                    console.error('Generate strategy failed:', error);
+                    showToast(error.message || '生成检索策略失败，请稍后重试', 'error');
+                }
+            });
+        }
+
+        // 单句模式执行检索策略按钮事件处理
+        const singleExecuteBtn = document.getElementById('single-execute-btn');
+        if (singleExecuteBtn) {
+            singleExecuteBtn.addEventListener('click', async function() {
+                const strategy = document.getElementById('search-strategy').value.trim();
+                if (!strategy) {
+                    showToast('请先生成检索策略', 'error');
+                    return;
+                }
+
+                // 清空并显示进度容器
+                const progressContainer = document.getElementById('searchProgress');
+                const progressLog = progressContainer.querySelector('.progress-log');
+                progressLog.innerHTML = '';
+                progressContainer.style.display = 'block';
+
+                // 重置进度条
+                const progressBar = progressContainer.querySelector('.progress-bar');
+                const progressPercentage = progressContainer.querySelector('.progress-percentage');
+                const progressMessage = progressContainer.querySelector('.progress-message');
+                
+                progressBar.style.width = '0%';
+                progressBar.setAttribute('aria-valuenow', 0);
+                progressPercentage.textContent = '0%';
+                progressMessage.textContent = '准备开始检索...';
+
+                // 获取筛选条件
+                const filters = {
+                    year_start: document.getElementById('year-start').value,
+                    year_end: document.getElementById('year-end').value,
+                    min_if: document.getElementById('min-if').value,
+                    jcr_quartile: Array.from(document.querySelectorAll('input[name="jcr"]:checked')).map(cb => cb.value),
+                    cas_quartile: Array.from(document.querySelectorAll('input[name="cas"]:checked')).map(cb => cb.value),
+                    papers_limit: document.getElementById('papers-limit').value,
+                    sort_mode: document.querySelector('input[name="sort-mode"]:checked').value // 使用筛选条件附近的排序选择
+                };
+
+                try {
+                    showLoading('正在执行检索...');
+                    const response = await fetch('/api/search', {
+                        method: 'POST',
+                        headers: getHeaders(),
+                        body: JSON.stringify({
+                            query: strategy,
+                            mode: 'strategy',
+                            filters: filters
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(await response.text());
+                    }
+
+                    const data = await response.json();
+                    // 执行原有的结果处理逻辑
+                    if (data.success) {
+                        // 保存导出文件路径
+                        if (data.export_files) {
+                            window.currentExportFiles = data.export_files;
+                            console.log('导出文件路径已保存:', data.export_files);
+                        }
+                        
+                        // 保存搜索结果数据，用于后续导出
+                        window.searchResultData = data;
+                        console.log('搜索结果数据已保存，数据长度:', data.data ? data.data.length : 0);
+                        console.log('排序模式:', document.querySelector('input[name="sort-mode"]:checked').value);
+
+                        // 显示检索统计
+                        document.getElementById('search-stats').style.display = 'block';
+                        document.getElementById('total-count').textContent = data.total_count || 0;
+                        document.getElementById('filtered-count').textContent = data.filtered_count || 0;
+
+                        // 更新进度条到100%
+                        progressBar.style.width = '100%';
+                        progressBar.setAttribute('aria-valuenow', 100);
+                        progressPercentage.textContent = '100%';
+                        progressMessage.textContent = '检索完成';
+                        
+                        // 显示搜索结果
+                        const resultsContainer = document.getElementById('results-container');
+                        resultsContainer.innerHTML = '';
+                        
+                        // 直接使用后端返回的已排序数据
+                        if (data.data && data.data.length > 0) {
+                            // 修复权威分数计算信息，确保相关度得分正确
+                            data.data = fixAuthorityCalculation(data.data);
+                            
+                            // 获取当前排序模式
+                            const sortMode = document.querySelector('input[name="sort-mode"]:checked').value;
+                            console.log(`搜索结果使用排序模式: ${sortMode}`);
+                            
+                            // 根据排序模式对结果进行排序
+                            const sortedData = [...data.data].sort((a, b) => {
+                                if (sortMode === 'authority') {
+                                    // 权威文献优先模式：按权威分数排序
+                                    const aScore = a.authority_score !== undefined ? parseFloat(a.authority_score) : 0;
+                                    const bScore = b.authority_score !== undefined ? parseFloat(b.authority_score) : 0;
+                                    return (bScore || 0) - (aScore || 0); // 从高到低排序
+                                } else {
+                                    // 相关度优先模式：按相关度排序
+                                    const aScore = a.relevance_score !== undefined ? parseFloat(a.relevance_score) : (a.relevance !== undefined ? parseFloat(a.relevance) : 0);
+                                    const bScore = b.relevance_score !== undefined ? parseFloat(b.relevance_score) : (b.relevance !== undefined ? parseFloat(b.relevance) : 0);
+                                    return (bScore || 0) - (aScore || 0); // 从高到低排序
+                                }
+                            });
+                            
+                            // 记录排序情况
+                            console.log(`排序后前5篇文章情况:`);
+                            sortedData.slice(0, 5).forEach((paper, idx) => {
+                                const relevanceScore = paper.relevance_score !== undefined ? paper.relevance_score : paper.relevance;
+                                const authorityScore = paper.authority_score !== undefined ? paper.authority_score : 'N/A';
+                                console.log(`第${idx + 1}篇文章 - 相关度: ${relevanceScore}, 权威分数: ${authorityScore}`);
+                            });
+                            
+                            // 显示排序后的结果
+                            sortedData.forEach((paper, index) => {
+                                const resultHtml = `
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <a href="${paper.url || '#'}" target="_blank" class="text-decoration-none">
+                                                    ${paper.title}
+                                                </a>
+                                            </h5>
+                                            <div class="d-flex flex-wrap gap-3 mb-2">
+                                                <span class="text-muted">
+                                                    <i class="fas fa-users me-1"></i>
+                                                    ${paper.authors ? paper.authors.join(', ') : 'N/A'}
+                                                </span>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-book me-1"></i>
+                                                    ${paper.journal_info?.title || 'N/A'}
+                                                </span>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    ${paper.pub_year || 'N/A'}
+                                                </span>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-3 mb-3">
+                                                <span class="badge bg-primary">
+                                                    IF: ${paper.journal_info?.impact_factor || 'N/A'}
+                                                </span>
+                                                <span class="badge bg-info">
+                                                    JCR: ${paper.journal_info?.jcr_quartile || 'N/A'}
+                                                </span>
+                                                <span class="badge bg-success">
+                                                    CAS: ${paper.journal_info?.cas_quartile || 'N/A'}
+                                                </span>
+                                                <span class="badge bg-warning text-dark">
+                                                                    相关度: ${paper.relevance_score !== undefined ? paper.relevance_score : (paper.relevance !== undefined ? paper.relevance : 'N/A')}%
+                                                </span>
+                                                ${paper.authority_score ? `
+                                                <span class="badge bg-primary text-light">
+                                                    权威分数: ${paper.authority_score}
+                                                </span>
+                                                ` : ''}
+                                            </div>
+                                            <p class="card-text text-muted">
+                                                ${paper.abstract || 'No abstract available'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                `;
+                                resultsContainer.insertAdjacentHTML('beforeend', resultHtml);
+                            });
+                        } else {
+                            resultsContainer.innerHTML = `
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    未找到符合条件的文献
+                                </div>
+                            `;
+                        }
+                            
+                            // 滚动到结果区域
+                            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+                        
+                        showToast('检索完成', 'success');
+                    } else {
+                        throw new Error(data.error || '检索失败');
+                    }
+                } catch (error) {
+                    console.error('Search failed:', error);
+                    // 添加错误日志
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'log-entry';
+                    const time = new Date().toLocaleTimeString();
+                    logEntry.innerHTML = `
+                        <span class="log-time">[${time}]</span>
+                        <span class="log-message log-error">✗ ${error.message || '检索失败，请稍后重试'}</span>
+                    `;
+                    progressLog.appendChild(logEntry);
+                    showToast(error.message || '检索失败，请稍后重试', 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+
+        // 段落模式一键检索全部句子按钮事件处理
+        const executeAllSentencesBtn = document.getElementById('execute-all-sentences-btn');
+        if (executeAllSentencesBtn) {
+            executeAllSentencesBtn.addEventListener('click', async function() {
+                // 获取所有句子的执行按钮
+                const sentenceButtons = document.querySelectorAll('.execute-sentence-btn');
+                if (sentenceButtons.length === 0) {
+                    showToast('没有可检索的句子', 'error');
+                    return;
+                }
+                
+                // 确保句子数据可用
+                if (!sentencesData || sentencesData.length === 0) {
+                    showToast('句子数据不可用，请重新生成检索策略', 'error');
+                    return;
+                }
+                
+                // 禁用一键检索按钮，防止重复点击
+                executeAllSentencesBtn.disabled = true;
+                executeAllSentencesBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>正在检索中...';
+                
+                // 获取筛选条件
+                const filters = {
+                    year_start: document.getElementById('year-start').value,
+                    year_end: document.getElementById('year-end').value,
+                    min_if: document.getElementById('min-if').value,
+                    jcr_quartile: Array.from(document.querySelectorAll('input[name="jcr"]:checked')).map(cb => cb.value),
+                    cas_quartile: Array.from(document.querySelectorAll('input[name="cas"]:checked')).map(cb => cb.value),
+                    papers_limit: document.getElementById('papers-limit').value,
+                    sort_mode: document.querySelector('input[name="sort-mode"]:checked').value // 使用正确的排序模式选择器
+                };
+                
+                // 显示进度
+                const progressContainer = document.getElementById('searchProgress');
+                const progressLog = progressContainer.querySelector('.progress-log');
+                progressLog.innerHTML = '';
+                progressContainer.style.display = 'block';
+                
+                const progressBar = progressContainer.querySelector('.progress-bar');
+                const progressPercentage = progressContainer.querySelector('.progress-percentage');
+                const progressMessage = progressContainer.querySelector('.progress-message');
+                
+                try {
+                    // 按顺序执行每个句子的检索
+                    for (let i = 0; i < sentenceButtons.length; i++) {
+                        const button = sentenceButtons[i];
+                        const sentenceIndex = button.getAttribute('data-index');
+                        const sentenceText = sentencesData[sentenceIndex].text;
+                        const sentenceStrategy = sentencesData[sentenceIndex].search_strategy;
+                        
+                        // 更新进度
+                        const currentProgress = Math.round(((i + 1) / sentenceButtons.length) * 100);
+                        progressBar.style.width = `${currentProgress}%`;
+                        progressBar.setAttribute('aria-valuenow', currentProgress);
+                        progressPercentage.textContent = `${currentProgress}%`;
+                        progressMessage.textContent = `正在检索句子 ${Number(sentenceIndex) + 1}/${sentenceButtons.length}...`;
+                        
+                        // 添加日志
+                        const logEntry = document.createElement('div');
+                        logEntry.className = 'log-entry';
+                        const time = new Date().toLocaleTimeString();
+                        logEntry.innerHTML = `
+                            <span class="log-time">[${time}]</span>
+                            <span class="log-message">开始检索句子 ${Number(sentenceIndex) + 1}: "${sentenceText.substring(0, 30)}${sentenceText.length > 30 ? '...' : ''}"</span>
+                        `;
+                        progressLog.appendChild(logEntry);
+                        
+                        showLoading(`正在检索句子 ${Number(sentenceIndex) + 1}/${sentenceButtons.length}...`);
+                        
+                        // 请求API
+                        try {
+                            const response = await fetch('/api/search-sentence', {
+                                method: 'POST',
+                                headers: getHeaders(),
+                                body: JSON.stringify({
+                                    strategy: sentenceStrategy,
+                                    filters: filters
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error(await response.text());
+                            }
+                            
+                            const result = await response.json();
+                            
+                            // 检查是否需要充值
+                            if (result.error === 'insufficient_credit' && result.redirect_url) {
+                                showToast('您的积分不足，请先充值', 'warning');
+                                setTimeout(() => {
+                                    window.location.href = result.redirect_url;
+                                }, 1500);
+                                return;
+                            }
+                            
+                            if (result.success) {
+                                // 保存检索结果到全局变量
+                                if (!window.sentenceSearchResults) {
+                                    window.sentenceSearchResults = [];
+                                }
+                                window.sentenceSearchResults[sentenceIndex] = result;
+                                
+                                // 显示此句子的检索结果
+                                const sentenceDiv = button.closest('.sentence-strategy-container');
+                                const resultsContainer = sentenceDiv.querySelector('.sentence-results');
+                                resultsContainer.style.display = 'block';
+                                resultsContainer.innerHTML = '';
+                                
+                                const statsHtml = `
+                                    <div class="sentence-stats mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>初始检索到文献：<strong>${result.total_count || 0}</strong> 篇</span>
+                                            <span>筛选后文献：<strong>${result.filtered_count || 0}</strong> 篇</span>
+                                        </div>
+                                    </div>
+                                `;
+                                resultsContainer.insertAdjacentHTML('beforeend', statsHtml);
+                                
+                                // 显示文献列表
+                                if (result.data && result.data.length > 0) {
+                                    // 修复权威分数计算信息，确保相关度得分正确
+                                    result.data = fixAuthorityCalculation(result.data);
+                                    
+                                    // 获取当前排序模式
+                                    const sortMode = filters.sort_mode || 'relevance';
+                                    console.log(`句子 ${Number(sentenceIndex) + 1} 使用排序模式: ${sortMode}`);
+                                    
+                                    // 根据排序模式对结果进行排序
+                                    const sortedPapers = [...result.data].sort((a, b) => {
+                                        if (sortMode === 'authority') {
+                                            // 权威文献优先模式：按权威分数排序
+                                            const aScore = a.authority_score !== undefined ? parseFloat(a.authority_score) : 0;
+                                            const bScore = b.authority_score !== undefined ? parseFloat(b.authority_score) : 0;
+                                            return (bScore || 0) - (aScore || 0); // 从高到低排序
+                                        } else {
+                                            // 相关度优先模式：按相关度排序
+                                            const aScore = a.relevance_score !== undefined ? parseFloat(a.relevance_score) : (a.relevance !== undefined ? parseFloat(a.relevance) : 0);
+                                            const bScore = b.relevance_score !== undefined ? parseFloat(b.relevance_score) : (b.relevance !== undefined ? parseFloat(b.relevance) : 0);
+                                            return (bScore || 0) - (aScore || 0); // 从高到低排序
+                                        }
+                                    });
+                                    
+                                    // 记录排序情况
+                                    console.log(`句子 ${Number(sentenceIndex) + 1} 排序后前5篇文章情况:`);
+                                    sortedPapers.slice(0, 5).forEach((paper, idx) => {
+                                        const relevanceScore = paper.relevance_score !== undefined ? paper.relevance_score : paper.relevance;
+                                        const authorityScore = paper.authority_score !== undefined ? paper.authority_score : 'N/A';
+                                        console.log(`第${idx + 1}篇文章 - 相关度: ${relevanceScore}, 权威分数: ${authorityScore}`);
+                                    });
+                                    
+                                    // 更新保存的结果，确保已排序
+                                    window.sentenceSearchResults[sentenceIndex].data = sortedPapers;
+                                    
+                                    const papersListHtml = `
+                                        <div class="papers-list">
+                                            ${sortedPapers.map(paper => {
+                                                const journalInfo = paper.journal_info || {};
+                                                // 确定使用哪个相关度字段
+                                                const relevanceScore = paper.relevance_score !== undefined ? paper.relevance_score : paper.relevance;
+                                                return `
+                                                    <div class="paper-item mb-3 p-3 border rounded">
+                                                        <div class="paper-title mb-2">
+                                                            <a href="${paper.url || '#'}" target="_blank" class="text-decoration-none">
+                                                                ${paper.title}
+                                                            </a>
+                                                        </div>
+                                                        <div class="paper-authors text-muted mb-1 small">
+                                                            ${paper.authors ? paper.authors.join(', ') : 'N/A'}
+                                                        </div>
+                                                        <div class="paper-journal text-muted mb-2 small">
+                                                            <i class="fas fa-book me-1"></i>${journalInfo.title || 'N/A'}, ${paper.pub_year || 'N/A'}
+                                                        </div>
+                                                        <div class="d-flex flex-wrap gap-2 mb-2">
+                                                            <span class="badge bg-primary">
+                                                                IF: ${journalInfo.impact_factor || 'N/A'}
+                                                            </span>
+                                                            <span class="badge bg-info">
+                                                                JCR: ${journalInfo.jcr_quartile || 'N/A'}
+                                                            </span>
+                                                            <span class="badge bg-success">
+                                                                CAS: ${journalInfo.cas_quartile || 'N/A'}
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark">
+                                                                相关度: ${relevanceScore || 'N/A'}%
+                                                            </span>
+                                                        </div>
+                                                        
+                                                        ${paper.authority_calculation ? `
+                                                        <div class="authority-score mt-2">
+                                                            <div class="score-title">
+                                                                <i class="fas fa-crown me-1 text-warning"></i>权威分数计算过程:
+                                                            </div>
+                                                            <div class="score-details">
+                                                                <div class="score-row">
+                                                                    <span class="score-label">当前影响因子:</span>
+                                                                    <span class="score-value">${paper.authority_calculation && paper.authority_calculation.current_if !== undefined ? paper.authority_calculation.current_if : journalInfo.impact_factor || '未知'}</span>
+                                                                    <span class="score-result">(最高影响因子: ${paper.authority_calculation && paper.authority_calculation.max_if !== undefined ? paper.authority_calculation.max_if : '未知'})</span>
+                                                                </div>
+                                                                <div class="score-row">
+                                                                    <span class="score-label">影响因子得分:</span>
+                                                                    <span class="score-value">${paper.authority_calculation && paper.authority_calculation.if_score !== undefined ? paper.authority_calculation.if_score : '未计算'}</span>
+                                                                    <span class="score-result">× 权重 ${paper.authority_calculation && paper.authority_calculation.if_weight !== undefined ? paper.authority_calculation.if_weight : 0.6} = ${paper.authority_calculation && paper.authority_calculation.if_contribution !== undefined ? paper.authority_calculation.if_contribution : '未计算'}</span>
+                                                                </div>
+                                                                <div class="score-row">
+                                                                    <span class="score-label">相关度得分:</span>
+                                                                    <span class="score-value">${paper.authority_calculation && paper.authority_calculation.relevance_score !== undefined ? paper.authority_calculation.relevance_score : (paper.relevance_score !== undefined ? paper.relevance_score : paper.relevance || '未知')}</span>
+                                                                    <span class="score-result">× 权重 ${paper.authority_calculation && paper.authority_calculation.relevance_weight !== undefined ? paper.authority_calculation.relevance_weight : 0.4} = ${paper.authority_calculation && paper.authority_calculation.relevance_contribution !== undefined ? paper.authority_calculation.relevance_contribution : '未计算'}</span>
+                                                                </div>
+                                                                <div class="score-row final">
+                                                                    <span class="score-label">最终权威分数:</span>
+                                                                    <span class="score-value">${paper.authority_score}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        ` : ''}
+                                                    </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    `;
+                                    resultsContainer.insertAdjacentHTML('beforeend', papersListHtml);
+                                } else {
+                                    resultsContainer.insertAdjacentHTML('beforeend', `
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            未找到符合条件的文献
+                                        </div>
+                                    `);
+                                }
+                                
+                                // 添加成功日志
+                                const successLogEntry = document.createElement('div');
+                                successLogEntry.className = 'log-entry';
+                                const successTime = new Date().toLocaleTimeString();
+                                successLogEntry.innerHTML = `
+                                    <span class="log-time">[${successTime}]</span>
+                                    <span class="log-message">✓ 句子 ${Number(sentenceIndex) + 1} 检索完成，找到 ${result.filtered_count || 0} 篇文献</span>
+                                `;
+                                progressLog.appendChild(successLogEntry);
+                                
+                                // 滚动日志到底部
+                                progressLog.scrollTop = progressLog.scrollHeight;
+                            } else {
+                                throw new Error(result.error || '检索失败');
+                            }
+                        } catch (error) {
+                            console.error(`检索句子 ${Number(sentenceIndex) + 1} 失败:`, error);
+                            
+                            // 添加错误日志
+                            const errorLogEntry = document.createElement('div');
+                            errorLogEntry.className = 'log-entry';
+                            const errorTime = new Date().toLocaleTimeString();
+                            errorLogEntry.innerHTML = `
+                                <span class="log-time">[${errorTime}]</span>
+                                <span class="log-message log-error">✗ 句子 ${Number(sentenceIndex) + 1} 检索失败: ${error.message || '未知错误'}</span>
+                            `;
+                            progressLog.appendChild(errorLogEntry);
+                            
+                            // 继续下一个句子，不中断整体流程
+                            continue;
+                        }
+                    }
+                    
+                    // 全部检索完成
+                    progressBar.style.width = '100%';
+                    progressBar.setAttribute('aria-valuenow', 100);
+                    progressPercentage.textContent = '100%';
+                    progressMessage.textContent = '全部句子检索完成';
+                    
+                    // 添加完成日志
+                    const completeLogEntry = document.createElement('div');
+                    completeLogEntry.className = 'log-entry';
+                    const completeTime = new Date().toLocaleTimeString();
+                    completeLogEntry.innerHTML = `
+                        <span class="log-time">[${completeTime}]</span>
+                        <span class="log-message">✓ 全部 ${sentenceButtons.length} 个句子检索完成</span>
+                    `;
+                    progressLog.appendChild(completeLogEntry);
+                    
+                    // 显示导出所有结果按钮
+                    const exportAllBtn = document.getElementById('export-all-paragraph-btn');
+                    if (exportAllBtn) {
+                        exportAllBtn.style.display = 'block';
+                    }
+                    
+                    showToast('全部句子检索完成', 'success');
+                } catch (error) {
+                    console.error('批量检索失败:', error);
+                    showToast(error.message || '批量检索失败，请稍后重试', 'error');
+                } finally {
+                    hideLoading();
+                    // 恢复按钮状态
+                    executeAllSentencesBtn.disabled = false;
+                    executeAllSentencesBtn.innerHTML = '<i class="fas fa-search me-2"></i>一键检索全部句子';
+                }
+            });
+        }
+
+        // 段落模式导出所有结果按钮事件处理
+        const exportAllParagraphBtn = document.getElementById('export-all-paragraph-btn');
+        if (exportAllParagraphBtn) {
+            exportAllParagraphBtn.addEventListener('click', async function() {
+                // 检查是否有已检索的句子结果
+                const sentenceResults = document.querySelectorAll('.sentence-results');
+                const sentenceResultsVisible = Array.from(sentenceResults).filter(el => el.style.display !== 'none');
+                
+                if (sentenceResultsVisible.length === 0) {
+                    showToast('请先检索句子', 'error');
+                    return;
+                }
+                
+                // 弹出导出格式选择框
+                const formatSelection = confirm('选择导出格式：\n确定 - Word格式\n取消 - Excel格式');
+                const format = formatSelection ? 'word' : 'excel';
+                
+                try {
+                    showLoading(`正在导出所有句子结果为${format.toUpperCase()}...`);
+                    
+                    // 收集所有句子的检索结果
+                    const allSentenceResults = [];
+                    
+                    // 对每个可见的句子结果容器
+                    document.querySelectorAll('.sentence-strategy-container').forEach((container, index) => {
+                        const resultContainer = container.querySelector('.sentence-results');
+                        if (resultContainer && resultContainer.style.display !== 'none') {
+                            // 从该句子的数据中提取信息
+                            const sentenceText = sentencesData[index].text;
+                            const sentenceStrategy = sentencesData[index].search_strategy;
+                            
+                            // 尝试从DOM中提取相关文献数量
+                            const statsElem = resultContainer.querySelector('.sentence-stats');
+                            let paperCount = 0;
+                            if (statsElem) {
+                                const countText = statsElem.textContent;
+                                const match = countText.match(/筛选后文献：(\d+)/);
+                                if (match) {
+                                    paperCount = parseInt(match[1]);
+                                }
+                            }
+                            
+                            // 获取相关文献数据
+                            let papers = [];
+                            if (window.sentenceSearchResults && window.sentenceSearchResults[index]) {
+                                papers = window.sentenceSearchResults[index].data || [];
+                            }
+                            
+                            allSentenceResults.push({
+                                text: sentenceText,
+                                search_strategy: sentenceStrategy,
+                                papers: papers
+                            });
+                        }
+                    });
+                    
+                    if (allSentenceResults.length === 0) {
+                        showToast('没有可导出的检索结果', 'error');
+                        hideLoading();
+                        return;
+                    }
+                    
+                    // 请求API导出
+                    const response = await fetch('/api/export-paragraph', {
+                        method: 'POST',
+                        headers: getHeaders(),
+                        body: JSON.stringify({
+                            sentences_results: allSentenceResults,
+                            query: document.getElementById('search-input').value.trim(),
+                            format: format
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(await response.text());
+                    }
+                    
+                    const result = await response.json();
+                    if (result.success && result.download_url) {
+                        // 创建一个链接来下载文件
+                        const link = document.createElement('a');
+                        link.href = result.download_url;
+                        link.download = result.file_id;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        showToast(`段落分析结果已导出为${format.toUpperCase()}`, 'success');
+                    } else {
+                        throw new Error(result.error || '导出失败');
+                    }
+                } catch (error) {
+                    console.error('导出段落结果失败:', error);
+                    showToast(error.message || '导出失败，请稍后重试', 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+
+        // 热点分析功能
+        const analyzeBtn = document.getElementById('analyze-btn');
+        if (analyzeBtn) {
+            analyzeBtn.addEventListener('click', async function() {
+                const journal = document.getElementById('journal-name').value.trim();
+                const keywords = document.getElementById('keywords').value.trim();
+                const startYear = document.getElementById('start-year').value;
+                const endYear = document.getElementById('end-year').value;
+
+                if (!journal) {
+                    showToast('请输入期刊名称', 'error');
+                    return;
+                }
+
+                if (!startYear || !endYear) {
+                    showToast('请输入完整的时间范围', 'error');
+                    return;
+                }
+
+                if (parseInt(startYear) > parseInt(endYear)) {
+                    showToast('起始年份不能大于结束年份', 'error');
+                    return;
+                }
+
+                showLoading('正在分析中，请稍候...');
+                    
+                try {
+                    // 使用getHeaders()函数添加会话ID
+                    const response = await fetch('/api/analyze-journal', {
+                        method: 'POST',
+                        headers: getHeaders(), // 添加会话ID
+                        body: JSON.stringify({
+                            journal: journal,
+                            keywords: keywords,
+                            start_year: parseInt(startYear),
+                            end_year: parseInt(endYear)
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(await response.text());
+                    }
+
+                    const data = await response.json();
+                    if (data.success) {
+                        // 发送分析开始事件
+                        socket.emit('analysis_progress', {
+                            stage: 'start',
+                            message: '开始分析期刊热点...',
+                            percentage: 0
+                        });
+
+                        displayAnalysisResults(data);
+                        
+                        // 发送分析完成事件
+                        socket.emit('analysis_progress', {
+                            stage: 'complete',
+                            message: '分析完成',
+                            percentage: 100
+                        });
+                        
+                        showToast('分析完成', 'success');
+                    } else {
+                        throw new Error(data.error || '分析失败');
+                    }
+                } catch (error) {
+                    console.error('Analysis failed:', error);
+                    // 发送错误事件
+                    socket.emit('analysis_error', {
+                        error: error.message || '分析失败，请稍后重试'
+                    });
+                    showToast(error.message || '分析失败，请稍后重试', 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+        }
+
+        // 导出按钮点击事件处理
+        const exportBtn = document.getElementById('stats-export-btn');
+        const exportDropdown = document.getElementById('stats-export-dropdown');
+
+        if (exportBtn && exportDropdown) {
+            // 点击导出按钮显示/隐藏下拉菜单
+            exportBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // 检查是否有可用的导出文件
+                if (!window.currentExportFiles || Object.keys(window.currentExportFiles).length === 0) {
+                    showToast('导出文件未准备好，请先执行检索', 'error');
+                    return;
+                }
+                
+                exportDropdown.classList.toggle('show');
+            });
+
+            // 点击下拉菜单项处理导出请求
+            exportDropdown.addEventListener('click', async function(e) {
+                const exportItem = e.target.closest('.export-item');
+                if (!exportItem) return;
+
+                const exportType = exportItem.dataset.type;
+                const exportFiles = window.currentExportFiles || {};
+                
+                console.log('当前导出文件:', exportFiles);
+                console.log('选择的导出类型:', exportType);
+
+                let filePath;
+                switch(exportType) {
+                    case 'initial_word':
+                        filePath = exportFiles.initial_word;
+                        break;
+                    case 'filtered_word':
+                        filePath = exportFiles.filtered_word;
+                        break;
+                    case 'filtered_titles':
+                        filePath = exportFiles.filtered_titles;
+                        break;
+                    case 'initial_excel':
+                        filePath = exportFiles.initial_excel;
+                        break;
+                    case 'filtered_excel':
+                        filePath = exportFiles.filtered_excel;
+                        break;
+                    case 'filtered_excel_pro':
+                        // 调用API导出Pro版Excel
+                        try {
+                            showLoading('正在生成检索表格Pro...');
+                            
+                            // 获取保存的搜索结果数据
+                            const searchData = window.searchResultData || {};
+                            
+                            const response = await fetch('/api/export', {
+                                method: 'POST',
+                                headers: getHeaders(),
+                                body: JSON.stringify({
+                                    format: 'excel_pro',
+                                    papers: searchData.data || [],
+                                    all_papers: searchData.all_papers || searchData.data || [],
+                                    query: document.getElementById('search-input').value.trim()
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error('导出失败');
+                            }
+                            
+                            const result = await response.json();
+                            if (result.success && result.download_url) {
+                                filePath = result.file_id;
+                                showToast('检索表格Pro生成成功', 'success');
+                            } else {
+                                throw new Error(result.error || '导出失败');
+                            }
+                        } catch (error) {
+                            console.error('生成检索表格Pro失败:', error);
+                            showToast('生成检索表格Pro失败: ' + error.message, 'error');
+                            hideLoading();
+                            return;
+                        } finally {
+                            hideLoading();
+                        }
+                        break;
+                }
+
+                if (filePath) {
+                    console.log('准备下载文件:', filePath);
+                    try {
+                        // 创建一个隐藏的a标签来触发下载
+                        const link = document.createElement('a');
+                        
+                        // 使用API端点下载文件
+                        const baseUrl = window.location.origin;
+                        link.href = `${baseUrl}/api/download/${filePath}`;
+                        
+                        // 从文件路径中提取文件名作为下载文件名
+                        const filename = filePath.split('/').pop();
+                        link.download = filename;
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showToast('开始下载文件', 'success');
+                    } catch (error) {
+                        console.error('下载文件失败:', error);
+                        showToast('下载文件失败，请重试', 'error');
+                    }
+                } else {
+                    console.error('未找到文件路径:', exportType);
+                    showToast('导出文件未准备好，请先执行检索', 'error');
+                }
+
+                // 隐藏下拉菜单
+                exportDropdown.classList.remove('show');
+            });
+
+            // 点击页面其他地方时隐藏下拉菜单
+            document.addEventListener('click', function(e) {
+                if (!exportBtn.contains(e.target) && !exportDropdown.contains(e.target)) {
+                    exportDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // 在搜索进度更新时保存导出文件路径
+        socket.on('search_progress', function(data) {
+            console.log('收到搜索进度更新:', data);
+            if (data.stage === 'complete' && data.files) {
+                window.currentExportFiles = data.files;
+                console.log('已保存导出文件路径:', data.files);
+            }
+        });
+
+        // 添加分析进度事件监听
+        socket.on('analysis_progress', function(data) {
+            console.log('收到分析进度更新:', data);
+            if (data.stage === 'complete') {
+                showToast('分析完成', 'success');
+            } else if (data.stage === 'error') {
+                showToast(data.message || '分析出错', 'error');
+            }
+        });
+
+        // 添加分析错误事件监听
+        socket.on('analysis_error', function(data) {
+            console.error('收到分析错误:', data);
+            showToast(data.error || '分析出错', 'error');
+        });
+
+        // 添加段落模式导出按钮的事件处理
+        document.addEventListener('click', function(e) {
+            // 查找是否点击了段落模式的导出链接
+            const exportLink = e.target.closest('.sentence-export-link');
+            if (exportLink) {
+                e.preventDefault();
+                
+                const filePath = exportLink.getAttribute('href').replace('/api/download/', '');
+                if (filePath) {
+                    console.log('准备下载段落模式导出文件:', filePath);
+                    try {
+                        // 创建一个隐藏的a标签来触发下载
+                        const link = document.createElement('a');
+                        
+                        // 使用API端点下载文件
+                        const baseUrl = window.location.origin;
+                        link.href = `${baseUrl}/api/download/${filePath}`;
+                        
+                        // 从文件路径中提取文件名作为下载文件名
+                        const filename = filePath.split('/').pop();
+                        link.download = filename;
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        showToast('开始下载文件', 'success');
+                    } catch (error) {
+                        console.error('下载文件失败:', error);
+                        showToast('下载文件失败，请重试', 'error');
+                    }
+                } else {
+                    showToast('导出文件未准备好，请重试', 'error');
+                }
+            }
+        });
+    });
+
+    // 显示分析结果
+    function displayAnalysisResults(data) {
+        const resultsContainer = document.querySelector('.analysis-results');
+        resultsContainer.style.display = 'grid';
+
+        // 绘制热力图
+        const heatmapChart = echarts.init(document.getElementById('heatmap-chart'));
+        const heatmapData = data.heatmap_data || [];
+        
+        if (heatmapData.length > 0) {
+            // 准备热力图数据
+            const xAxisData = [];
+            const yAxisData = [];
+            const values = [];
+            let maxValue = 0;
+
+            // 从一维数组构建热力图数据
+            heatmapData.forEach(([topic, count]) => {
+                if (count > maxValue) maxValue = count;
+                xAxisData.push(topic);  // 直接使用主题作为x轴标签
+            });
+
+            // 构建热力图数据
+            heatmapData.forEach(([topic, count], index) => {
+                values.push([index, 0, count]);  // 使用一维布局
+            });
+
+            const heatmapOption = {
+                tooltip: {
+                    position: 'top',
+                    formatter: function(params) {
+                        const topic = xAxisData[params.data[0]];
+                        const value = params.data[2];
+                        return `${topic}<br/>文章数量: ${value}`;
+                    }
+                },
+                grid: {
+                    height: '50%',
+                    top: '10%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: xAxisData,
+                    splitArea: {
+                        show: true
+                    },
+                    axisLabel: {
+                        interval: 0,
+                        rotate: 45
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: [''],
+                    splitArea: {
+                        show: true
+                    },
+                    show: false
+                },
+                visualMap: {
+                    min: 0,
+                    max: maxValue,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '15%'
+                },
+                series: [{
+                    name: '热点分布',
+                    type: 'heatmap',
+                    data: values,
+                    label: {
+                        show: true,
+                        formatter: function(params) {
+                            return params.data[2];  // 只显示数值
+                        }
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            heatmapChart.setOption(heatmapOption);
+        } else {
+            document.getElementById('heatmap-chart').innerHTML = '<div class="no-data-message">暂无热点主题数据</div>';
+        }
+
+        // 绘制词云图
+        const wordcloudChart = echarts.init(document.getElementById('wordcloud-chart'));
+        const wordcloudData = data.wordcloud_data || [];
+
+        if (wordcloudData.length > 0) {
+            // 找出最大频率值，用于归一化
+            const maxFrequency = wordcloudData.length > 0 ? 
+                Math.max(...wordcloudData.map(item => item[1])) : 1;
+                
+            const wordcloudOption = {
+                tooltip: {
+                    formatter: function(params) {
+                        return `${params.data.name}: ${params.data.value}篇文章`;
+                    }
+                },
+                backgroundColor: '#ffffff',  // 使用纯白色背景，与黑色文字形成最佳对比
+                series: [{
+                    type: 'wordCloud',
+                    shape: 'circle',
+                    left: 'center',
+                    top: 'center',
+                    width: '90%',
+                    height: '90%',
+                    right: null,
+                    bottom: null,
+                    sizeRange: [18, 60],  // 增大字体最小值
+                    rotationRange: [-30, 30],  // 减小旋转角度范围
+                    rotationStep: 10,
+                    gridSize: 10,  // 增大网格大小
+                    drawOutOfBound: false,
+                    layoutAnimation: true,
+                    // 全局文字样式
+                    textStyle: {
+                        fontFamily: 'sans-serif',
+                        fontWeight: 'bold',
+                        textBorderColor: 'rgba(255,255,255,0.5)',
+                        textBorderWidth: 2,
+                        textShadowColor: 'rgba(0,0,0,0.3)',
+                        textShadowBlur: 2,
+                        color: '#000000'  // 统一使用黑色
+                    },
+                    // 强调样式
+                    emphasis: {
+                        focus: 'self',
+                        textStyle: {
+                            textBorderColor: '#fff',
+                            textBorderWidth: 2,
+                            shadowBlur: 10,
+                            shadowColor: '#333',
+                            color: '#000000'  // 强调时也使用黑色
+                        }
+                    },
+                    // 直接设置数据，不使用processedData
+                    data: wordcloudData.slice(0, 100).map(([name, value]) => {
+                        // 增加字体大小范围，使文字更加醒目
+                        const fontSize = Math.max(18, Math.min(60, 18 + (value / maxFrequency) * 42));
+                        return {
+                            name: name,
+                            value: value,
+                            textStyle: {
+                                fontSize: fontSize,
+                                // 增加文字描边和阴影效果
+                                textBorderColor: 'rgba(255,255,255,0.5)',
+                                textBorderWidth: 2,
+                                textShadowColor: 'rgba(0,0,0,0.3)',
+                                textShadowBlur: 2,
+                                color: '#000000'  // 每个词语都使用黑色
+                            }
+                        };
+                    })
+                }]
+            };
+
+            try {
+                console.log('词云图数据:', wordcloudData.slice(0, 100).map(([name, value]) => ({
+                    name: name,
+                    value: value
+                })));
+                wordcloudChart.setOption(wordcloudOption);
+                
+                // 添加窗口大小变化时重新渲染
+                window.addEventListener('resize', function() {
+                    wordcloudChart.resize();
+                });
+                
+                // 强制重新渲染一次
+                setTimeout(() => {
+                    wordcloudChart.resize();
+                    console.log('词云图重新渲染完成');
+                }, 100);
+            } catch (error) {
+                console.error('词云图渲染失败:', error);
+                document.getElementById('wordcloud-chart').innerHTML = 
+                    '<div class="no-data-message">词云图渲染失败，请尝试减少关键词数量</div>';
+            }
+        } else {
+            document.getElementById('wordcloud-chart').innerHTML = 
+                '<div class="no-data-message">暂无关键词数据</div>';
+        }
+
+        // 绘制趋势图
+        const trendChart = echarts.init(document.getElementById('trend-chart'));
+        const trendData = data.trend_data || {};
+
+        if (trendData.topics && trendData.topics.length > 0) {
+            const trendOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross',
+                        label: {
+                            backgroundColor: '#6a7985'
+                        }
+                    }
+                },
+                legend: {
+                    data: trendData.topics,
+                    top: '5%'
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: trendData.years || []
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '文章数量'
+                },
+                series: (trendData.topics || []).map((topic, index) => ({
+                    name: topic,
+                    type: 'line',
+                    data: trendData.frequencies ? trendData.frequencies[index] : [],
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    lineStyle: {
+                        width: 3
+                    }
+                }))
+            };
+            trendChart.setOption(trendOption);
+        } else {
+            document.getElementById('trend-chart').innerHTML = '<div class="no-data-message">暂无趋势数据</div>';
+        }
+
+        // 渲染热点作者表格
+        const authorsTable = document.getElementById('hot-authors-body');
+        const hotAuthors = (data.hot_authors || []).filter(author => author.name && author.name !== 'N/A');
+        
+        if (hotAuthors.length > 0) {
+            authorsTable.innerHTML = hotAuthors
+                .map((author, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${author.name}</td>
+                        <td>${author.total_papers}</td>
+                        <td>${author.first_author}</td>
+                        <td>${author.corresponding_author}</td>
+                        <td>${author.years.join(', ')}</td>
+                    </tr>
+                `).join('');
+        } else {
+            authorsTable.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center">暂无热点作者数据</td>
+                </tr>
+            `;
+        }
+
+        // 监听窗口大小变化，重绘图表
+        window.addEventListener('resize', function() {
+            if (heatmapData.length > 0) heatmapChart.resize();
+            if (wordcloudData.length > 0) wordcloudChart.resize();
+            if (trendData.topics && trendData.topics.length > 0) trendChart.resize();
+        });
+    }
+
+    // 添加以下代码到document.addEventListener('DOMContentLoaded', function() { 函数中
+
+    // 添加全局变量存储各句子的检索结果
+    window.sentenceSearchResults = [];
+
+    // 安全获取权威分数计算属性的函数
+    function safeGetAuthorityValue(paper, field, defaultValue) {
+        if (!paper || !paper.authority_calculation) return defaultValue || '未计算';
+        return paper.authority_calculation[field] !== undefined ? paper.authority_calculation[field] : defaultValue || '未计算';
+    }
+
+    // 获取DOM元素
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const searchModeButtons = document.querySelectorAll('.search-mode-btn');
+    </script>
+    <script>
+        // 修复权威分数计算信息的函数
+        function fixAuthorityCalculation(papers) {
+            console.log('修复权威分数计算信息');
+            
+            // 查找所有文献中的最大影响因子
+            let maxImpactFactor = 0;
+            papers.forEach(paper => {
+                const journalInfo = paper.journal_info || {};
+                const impactFactor = parseFloat(journalInfo.impact_factor || 0);
+                if (impactFactor > maxImpactFactor) {
+                    maxImpactFactor = impactFactor;
+                }
+            });
+            
+            if (maxImpactFactor === 0) {
+                maxImpactFactor = 10.0; // 使用一个合理的默认值
+                console.log('未找到有效的最大影响因子，使用默认值:', maxImpactFactor);
+            }
+            
+            console.log('最大影响因子:', maxImpactFactor);
+            
+            // 为每篇文献添加或修复权威分数计算信息
+            papers.forEach((paper, index) => {
+                if (!paper.authority_calculation || typeof paper.authority_calculation !== 'object') {
+                    const journalInfo = paper.journal_info || {};
+                    const impactFactor = parseFloat(journalInfo.impact_factor || 0);
+                    
+                    // 优先使用 relevance_score
+                    let relevance = 0;
+                    if (paper.relevance_score !== undefined && paper.relevance_score !== null) {
+                        relevance = parseFloat(paper.relevance_score);
+                        console.log(`文献${index+1}使用relevance_score: ${relevance}`);
+                    } else if (paper.relevance !== undefined && paper.relevance !== null) {
+                        relevance = parseFloat(paper.relevance);
+                        console.log(`文献${index+1}使用relevance: ${relevance}`);
+                    } else {
+                        console.log(`文献${index+1}没有相关度数据，使用默认值0`);
+                    }
+                    
+                    // 计算影响因子得分
+                    const ifScore = (impactFactor / maxImpactFactor) * 100;
+                    
+                    // 如果已有权威分数，使用已有的；否则根据影响因子和相关度计算
+                    let authorityScore = 0;
+                    if (paper.authority_score !== undefined && paper.authority_score !== null) {
+                        authorityScore = parseFloat(paper.authority_score);
+                        console.log(`文献${index+1}使用已有的权威分数: ${authorityScore}`);
+                    } else {
+                        // 影响因子权重60%，相关度权重40%
+                        authorityScore = (ifScore * 0.6 + relevance * 0.4);
+                        // 更新文献的权威分数
+                        paper.authority_score = Math.round(authorityScore * 10) / 10;
+                        console.log(`文献${index+1}计算的权威分数: ${paper.authority_score}`);
+                    }
+                    
+                    // 创建计算信息
+                    paper.authority_calculation = {
+                        current_if: impactFactor,
+                        max_if: maxImpactFactor,
+                        if_score: Math.round(ifScore * 10) / 10,
+                        relevance_score: Math.round(relevance * 10) / 10,
+                        if_weight: 0.6,
+                        relevance_weight: 0.4,
+                        if_contribution: Math.round(ifScore * 0.6 * 10) / 10,
+                        relevance_contribution: Math.round(relevance * 0.4 * 10) / 10,
+                        final_score: Math.round(authorityScore * 10) / 10
+                    };
+                    
+                    // 更新文献的relevance_score，确保它存在
+                    if (paper.relevance_score === undefined) {
+                        paper.relevance_score = relevance;
+                        console.log(`为文献${index+1}添加relevance_score: ${relevance}`);
+                    }
+                    
+                    if (index < 3) {
+                        console.log(`修复了第${index+1}篇文章的权威分数计算信息:`, 
+                            JSON.stringify(paper.authority_calculation));
+                    }
+                } else {
+                    // 如果已经有计算信息，确保相关度得分正确
+                    if (paper.authority_calculation.relevance_score === undefined || 
+                        paper.authority_calculation.relevance_score === 0) {
+                        // 尝试从文献中获取相关度
+                        let relevance = 0;
+                        if (paper.relevance_score !== undefined && paper.relevance_score !== null) {
+                            relevance = parseFloat(paper.relevance_score);
+                        } else if (paper.relevance !== undefined && paper.relevance !== null) {
+                            relevance = parseFloat(paper.relevance);
+                        }
+                        
+                        if (relevance > 0) {
+                            // 更新计算信息中的相关度得分
+                            paper.authority_calculation.relevance_score = Math.round(relevance * 10) / 10;
+                            paper.authority_calculation.relevance_contribution = 
+                                Math.round(relevance * paper.authority_calculation.relevance_weight * 10) / 10;
+                            
+                            // 重新计算最终分数
+                            paper.authority_calculation.final_score = 
+                                paper.authority_calculation.if_contribution + 
+                                paper.authority_calculation.relevance_contribution;
+                            
+                            // 同步更新文献的权威分数
+                            paper.authority_score = paper.authority_calculation.final_score;
+                            
+                            console.log(`更新了第${index+1}篇文章的相关度计算信息:`, 
+                                JSON.stringify({
+                                    relevance_score: paper.authority_calculation.relevance_score,
+                                    relevance_contribution: paper.authority_calculation.relevance_contribution,
+                                    final_score: paper.authority_calculation.final_score
+                                }));
+                        }
+                    }
+                }
+            });
+            
+            return papers;
+        }
+    </script>
+</body>
+</html>

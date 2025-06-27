@@ -8,4 +8,4 @@ build:
       - pip install -r requirements.txt
   providers:
     python:
-      version: 3.12.3 
+      version: 3.10.12
