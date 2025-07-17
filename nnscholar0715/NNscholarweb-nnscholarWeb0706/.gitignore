@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+nnscholars/
+nnscholarweb/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment variables
+.env
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite3
+
+# Other
+.DS_Store
+
+# Local environment
+.env.local
+.env.*.local
+
+# Output directories
+output/
+exports/*
+!exports/.gitkeep
+
+# System Files
+Thumbs.db
+.cursor/
+temp/
+tests/
+tatus
+simple_test_results.json
+综述版本/
+# 数据文件
+data/journal_metrics/*.csv 
+static/images/*
+!static/images/.gitkeep

@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文献追踪 - {{ seed_paper.title if seed_paper else '文献网络图谱' }} - NNScholar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #8B5CF6;
+            --secondary-color: #6B7280;
+            --background-color: #FFFFFF;
+            --card-background: #FFFFFF;
+            --text-color: #1F2937;
+            --border-color: #E5E7EB;
+            --hover-color: #F3F4F6;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            padding-top: 70px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+        }
+
+        .tracking-header {
+            background: linear-gradient(135deg, var(--primary-color), #A855F7);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .tracking-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .tracking-header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .control-panel {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .network-container {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            height: 600px;
+            position: relative;
+        }
+
+        #network-graph {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        .side-panel {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .paper-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all var(--transition-speed);
+            cursor: pointer;
+        }
+
+        .paper-item:hover {
+            background-color: var(--hover-color);
+            transform: translateY(-2px);
+            box-shadow: var(--card-shadow);
+        }
+
+        .paper-title {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .paper-meta {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .paper-score {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .btn-custom {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-custom:hover {
+            background: #7C3AED;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-custom {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            background: transparent;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-outline-custom:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-card {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .stats-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .stats-label {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+
+        .node-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .tab-content {
+            margin-top: 1rem;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--secondary-color);
+            border: none;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-brain me-2"></i>NNScholar
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">
+                    <i class="fas fa-arrow-left me-1"></i>返回检索
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <!-- 页面标题 -->
+        <div class="tracking-header">
+            <h1>🔗 文献追踪网络图谱</h1>
+            <p class="subtitle">
+                {% if seed_paper %}
+                种子文献：{{ seed_paper.title }}
+                {% else %}
+                用一张动态知识图谱，5分钟把陌生领域变成熟悉战场
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- 输入面板 -->
+        {% if not seed_paper %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-search me-2"></i>开始文献追踪
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">请输入文献信息来生成引用网络图谱：</p>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="paperInput"
+                                           placeholder="输入PMID、DOI或文献标题..."
+                                           onkeypress="handleInputKeyPress(event)">
+                                    <button class="btn btn-primary" type="button" onclick="startTracking()">
+                                        <i class="fas fa-play me-1"></i>开始追踪
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    支持格式：PMID (如: 12345678)、DOI (如: 10.1038/nature12345) 或文献标题
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-primary" onclick="showExamples()">
+                                        <i class="fas fa-lightbulb me-1"></i>查看示例
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 示例区域 -->
+                        <div id="examplesArea" class="mt-3" style="display: none;">
+                            <div class="alert alert-info">
+                                <h6>示例输入：</h6>
+                                <ul class="mb-0">
+                                    <li><strong>PMID:</strong> 34234567</li>
+                                    <li><strong>DOI:</strong> 10.1038/s41586-021-03819-2</li>
+                                    <li><strong>标题:</strong> Deep learning for drug discovery</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 加载状态 -->
+                        <div id="loadingArea" class="mt-3" style="display: none;">
+                            <div class="alert alert-primary">
+                                <div class="d-flex align-items-center">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span id="loadingMessage">正在搜索文献...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- 左侧：网络图谱 -->
+            <div class="col-lg-8">
+                <!-- 控制面板 -->
+                <div class="control-panel" {% if not seed_paper %}style="display: none;" id="controlPanel"{% endif %}>
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-3">
+                                <i class="fas fa-project-diagram me-2"></i>网络图谱控制
+                            </h5>
+                            <button class="btn btn-custom" onclick="resetGraph()">
+                                <i class="fas fa-redo me-1"></i>重置视图
+                            </button>
+                            <button class="btn btn-outline-custom" onclick="exportGraph()">
+                                <i class="fas fa-download me-1"></i>导出图谱
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="stats-card">
+                                        <div class="stats-number" id="node-count">0</div>
+                                        <div class="stats-label">节点数</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stats-card">
+                                        <div class="stats-number" id="edge-count">0</div>
+                                        <div class="stats-label">连接数</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stats-card">
+                                        <div class="stats-number" id="cluster-count">1</div>
+                                        <div class="stats-label">聚类数</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 网络图谱容器 -->
+                <div class="network-container">
+                    <svg id="network-graph"></svg>
+
+                    <!-- 空状态提示 -->
+                    {% if not seed_paper %}
+                    <div class="empty-state" id="emptyState">
+                        <div class="text-center">
+                            <i class="fas fa-project-diagram fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">开始您的文献追踪之旅</h4>
+                            <p class="text-muted">输入文献信息，生成引用网络图谱</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 图例 -->
+                    <div class="legend" {% if not seed_paper %}style="display: none;" id="graphLegend"{% endif %}>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FF6B6B;"></div>
+                            <span>最新文献 (≤2年)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4ECDC4;"></div>
+                            <span>较新文献 (3-5年)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #45B7D1;"></div>
+                            <span>中等年龄 (6-10年)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #96CEB4;"></div>
+                            <span>较老文献 (>10年)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FFD93D; border: 3px solid #FF6B6B;"></div>
+                            <span>种子文献</span>
+                        </div>
+                    </div>
+
+                    <!-- 加载遮罩 -->
+                    <div class="loading-overlay" id="loading-overlay">
+                        <div class="text-center">
+                            <div class="spinner"></div>
+                            <div class="mt-2">正在生成网络图谱...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：分析面板 -->
+            <div class="col-lg-4">
+                <div class="side-panel">
+                    <!-- 标签页导航 -->
+                    <ul class="nav nav-tabs" id="analysis-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="prior-tab" data-bs-toggle="tab" data-bs-target="#prior-works" type="button" role="tab">
+                                <i class="fas fa-history me-1"></i>祖先文献
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="derivative-tab" data-bs-toggle="tab" data-bs-target="#derivative-works" type="button" role="tab">
+                                <i class="fas fa-arrow-right me-1"></i>后代文献
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#node-details" type="button" role="tab">
+                                <i class="fas fa-info-circle me-1"></i>节点详情
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- 标签页内容 -->
+                    <div class="tab-content" id="analysis-tab-content">
+                        <!-- 祖先文献 -->
+                        <div class="tab-pane fade show active" id="prior-works" role="tabpanel">
+                            <div id="prior-works-content">
+                                <p class="text-muted">正在加载祖先文献...</p>
+                            </div>
+                        </div>
+
+                        <!-- 后代文献 -->
+                        <div class="tab-pane fade" id="derivative-works" role="tabpanel">
+                            <div id="derivative-works-content">
+                                <p class="text-muted">正在加载后代文献...</p>
+                            </div>
+                        </div>
+
+                        <!-- 节点详情 -->
+                        <div class="tab-pane fade" id="node-details" role="tabpanel">
+                            <div id="node-details-content">
+                                <p class="text-muted">点击图谱中的节点查看详细信息</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 节点提示框 -->
+    <div class="node-tooltip" id="node-tooltip" style="display: none;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // 全局变量
+        let networkData = null;
+        let simulation = null;
+        let svg = null;
+        let g = null;
+        let currentSeedPaper = {{ seed_paper | tojson if seed_paper else 'null' }};
+        let currentSessionId = '{{ session_id if session_id else '' }}';
+
+        // 确保会话ID正确设置
+        if (!currentSessionId) {
+            // 尝试从URL参数获取
+            const urlParams = new URLSearchParams(window.location.search);
+            currentSessionId = urlParams.get('session_id') || '';
+        }
+
+        console.log('Literature tracking initialized with session ID:', currentSessionId);
+
+        // 如果没有会话ID，显示提示信息
+        if (!currentSessionId) {
+            showNoSessionWarning();
+        }
+
+        // 显示无会话警告
+        function showNoSessionWarning() {
+            const inputPanel = document.querySelector('.input-panel');
+            if (inputPanel) {
+                const warningHtml = `
+                    <div class="alert alert-warning mt-3" role="alert">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            需要先进行文献检索
+                        </h5>
+                        <p class="mb-2">文献追踪功能需要基于已检索的文献数据进行分析。</p>
+                        <hr>
+                        <p class="mb-0">
+                            <a href="/" class="btn btn-primary btn-sm">
+                                <i class="fas fa-search me-1"></i>
+                                前往文献检索
+                            </a>
+                        </p>
+                    </div>
+                `;
+                inputPanel.insertAdjacentHTML('beforeend', warningHtml);
+            }
+        }
+
+        // 处理输入框回车键
+        function handleInputKeyPress(event) {
+            if (event.key === 'Enter') {
+                startTracking();
+            }
+        }
+
+        // 显示示例
+        function showExamples() {
+            const examplesArea = document.getElementById('examplesArea');
+            examplesArea.style.display = examplesArea.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // 开始文献追踪
+        async function startTracking() {
+            const input = document.getElementById('paperInput').value.trim();
+            if (!input) {
+                alert('请输入文献信息');
+                return;
+            }
+
+            // 显示加载状态
+            showLoadingState('正在搜索文献...');
+
+            try {
+                // 首先尝试解析输入类型并搜索文献
+                const paperInfo = await searchPaper(input);
+                if (paperInfo) {
+                    // 隐藏输入面板，显示控制面板
+                    hideInputPanel();
+                    showControlPanel();
+
+                    // 更新种子文献信息
+                    currentSeedPaper = paperInfo;
+                    updateSeedPaperInfo(paperInfo);
+
+                    // 生成网络图
+                    showLoadingState('正在生成网络图谱...');
+                    await generateNetwork(paperInfo.pmid || paperInfo.title);
+                } else {
+                    hideLoadingState();
+                    alert('未找到相关文献，请检查输入信息');
+                }
+            } catch (error) {
+                hideLoadingState();
+                alert('搜索失败：' + error.message);
+            }
+        }
+
+        // 搜索文献
+        async function searchPaper(input) {
+            const response = await fetch('/api/search_paper', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query: input })
+            });
+
+            const data = await response.json();
+            if (data.success && data.paper) {
+                return data.paper;
+            }
+            return null;
+        }
+
+        // 显示加载状态
+        function showLoadingState(message) {
+            const loadingArea = document.getElementById('loadingArea');
+            const loadingMessage = document.getElementById('loadingMessage');
+            loadingMessage.textContent = message;
+            loadingArea.style.display = 'block';
+        }
+
+        // 隐藏加载状态
+        function hideLoadingState() {
+            const loadingArea = document.getElementById('loadingArea');
+            loadingArea.style.display = 'none';
+        }
+
+        // 隐藏输入面板
+        function hideInputPanel() {
+            const inputPanel = document.querySelector('.card');
+            if (inputPanel) {
+                inputPanel.style.display = 'none';
+            }
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        // 显示控制面板
+        function showControlPanel() {
+            const controlPanel = document.getElementById('controlPanel');
+            if (controlPanel) {
+                controlPanel.style.display = 'block';
+            }
+            const graphLegend = document.getElementById('graphLegend');
+            if (graphLegend) {
+                graphLegend.style.display = 'block';
+            }
+        }
+
+        // 更新种子文献信息
+        function updateSeedPaperInfo(paperInfo) {
+            const subtitle = document.querySelector('.subtitle');
+            if (subtitle) {
+                subtitle.textContent = `种子文献：${paperInfo.title}`;
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGraph();
+
+            {% if seed_paper %}
+            // 如果有种子文献，自动生成网络图
+            generateNetwork('{{ seed_paper.pmid if seed_paper.pmid else seed_paper.title }}');
+            {% endif %}
+        });
+
+        // 初始化图谱
+        function initializeGraph() {
+            const container = document.getElementById('network-graph');
+            const containerRect = container.getBoundingClientRect();
+
+            svg = d3.select('#network-graph')
+                .attr('width', containerRect.width)
+                .attr('height', containerRect.height);
+
+            // 创建缩放行为
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on('zoom', function(event) {
+                    g.attr('transform', event.transform);
+                });
+
+            svg.call(zoom);
+
+            // 创建主要的g元素
+            g = svg.append('g');
+
+            // 创建箭头标记
+            svg.append('defs').append('marker')
+                .attr('id', 'arrowhead')
+                .attr('viewBox', '-0 -5 10 10')
+                .attr('refX', 20)
+                .attr('refY', 0)
+                .attr('orient', 'auto')
+                .attr('markerWidth', 8)
+                .attr('markerHeight', 8)
+                .attr('xoverflow', 'visible')
+                .append('svg:path')
+                .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+                .attr('fill', '#999')
+                .style('stroke', 'none');
+        }
+
+        // 生成网络图
+        async function generateNetwork(seedPaperId) {
+            try {
+                console.log('Generating network for seed paper:', seedPaperId);
+                console.log('Using session ID:', currentSessionId);
+
+                if (!currentSessionId) {
+                    throw new Error('会话ID未设置，请从主页面重新进入');
+                }
+
+                showLoading(true);
+                hideLoadingState(); // 隐藏输入面板的加载状态
+
+                const response = await fetch('/api/literature_tracking/generate_network', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'sid': currentSessionId
+                    },
+                    body: JSON.stringify({
+                        seed_paper_id: seedPaperId
+                    })
+                });
+
+                console.log('Network generation response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Network generation failed:', errorText);
+                    throw new Error(`网络生成失败 (${response.status}): ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('Network generation response:', data);
+
+                if (data.success) {
+                    networkData = data;
+                    renderNetwork(data.network);
+                    updateStatistics(data.statistics);
+
+                    // 使用种子文献的PMID来加载相关文献
+                    const seedPmid = currentSeedPaper ? currentSeedPaper.pmid : seedPaperId;
+                    loadPriorWorks(seedPmid);
+                    loadDerivativeWorks(seedPmid);
+                } else {
+                    showError('生成网络图失败: ' + data.error);
+                }
+
+            } catch (error) {
+                console.error('Network generation failed:', error);
+                showError('网络连接失败，请重试');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 渲染网络图
+        function renderNetwork(network) {
+            // 清除现有内容
+            g.selectAll('*').remove();
+
+            const nodes = network.nodes;
+            const edges = network.edges;
+
+            // 创建力导向模拟
+            const containerRect = svg.node().getBoundingClientRect();
+            simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(edges).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(containerRect.width / 2, containerRect.height / 2))
+                .force('collision', d3.forceCollide().radius(d => d.size + 5));
+
+            // 创建边
+            const link = g.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(edges)
+                .enter().append('line')
+                .attr('stroke', '#999')
+                .attr('stroke-opacity', 0.6)
+                .attr('stroke-width', d => Math.sqrt(d.weight || 1))
+                .attr('marker-end', 'url(#arrowhead)');
+
+            // 创建节点
+            const node = g.append('g')
+                .attr('class', 'nodes')
+                .selectAll('circle')
+                .data(nodes)
+                .enter().append('circle')
+                .attr('r', d => d.size)
+                .attr('fill', d => d.is_seed ? '#FFD93D' : d.color)
+                .attr('stroke', d => d.is_seed ? '#FF6B6B' : '#fff')
+                .attr('stroke-width', d => d.is_seed ? 3 : 1.5)
+                .style('cursor', 'pointer')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended))
+                .on('click', function(event, d) {
+                    showNodeDetails(d);
+                })
+                .on('mouseover', function(event, d) {
+                    showTooltip(event, d);
+                })
+                .on('mouseout', function() {
+                    hideTooltip();
+                });
+
+            // 创建标签
+            const label = g.append('g')
+                .attr('class', 'labels')
+                .selectAll('text')
+                .data(nodes)
+                .enter().append('text')
+                .text(d => d.label)
+                .attr('font-size', '10px')
+                .attr('font-family', 'Arial, sans-serif')
+                .attr('fill', '#333')
+                .attr('text-anchor', 'middle')
+                .attr('dy', '.35em')
+                .style('pointer-events', 'none');
+
+            // 更新位置
+            simulation.on('tick', function() {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                label
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y + d.size + 15);
+            });
+        }
+
+        // 拖拽事件处理
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // 显示节点详情
+        function showNodeDetails(node) {
+            const detailsContent = document.getElementById('node-details-content');
+
+            const html = `
+                <div class="paper-item">
+                    <div class="paper-title">${node.title}</div>
+                    <div class="paper-meta">
+                        <strong>作者:</strong> ${node.authors.slice(0, 3).join(', ')}${node.authors.length > 3 ? ' 等' : ''}<br>
+                        <strong>期刊:</strong> ${node.journal}<br>
+                        <strong>年份:</strong> ${node.year}<br>
+                        <strong>PMID:</strong> ${node.pmid || 'N/A'}<br>
+                        <strong>被引次数:</strong> ${node.citation_count}<br>
+                        <strong>相关度:</strong> ${(node.relatedness_score * 100).toFixed(1)}%
+                    </div>
+                    ${node.abstract ? `<div class="mt-2"><strong>摘要:</strong><br><small>${node.abstract.substring(0, 200)}...</small></div>` : ''}
+                </div>
+            `;
+
+            detailsContent.innerHTML = html;
+
+            // 切换到详情标签页
+            const detailsTab = new bootstrap.Tab(document.getElementById('details-tab'));
+            detailsTab.show();
+        }
+
+        // 显示提示框
+        function showTooltip(event, node) {
+            const tooltip = document.getElementById('node-tooltip');
+            tooltip.innerHTML = `
+                <strong>${node.title.substring(0, 50)}...</strong><br>
+                年份: ${node.year} | 被引: ${node.citation_count}<br>
+                相关度: ${(node.relatedness_score * 100).toFixed(1)}%
+            `;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY - 10) + 'px';
+        }
+
+        // 隐藏提示框
+        function hideTooltip() {
+            document.getElementById('node-tooltip').style.display = 'none';
+        }
+
+        // 加载祖先文献
+        async function loadPriorWorks(paperId) {
+            try {
+                const response = await fetch(`/api/literature_tracking/prior_works/${paperId}`, {
+                    headers: {
+                        'sid': currentSessionId
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    renderPriorWorks(data.prior_works);
+                } else {
+                    document.getElementById('prior-works-content').innerHTML =
+                        '<p class="text-muted">加载祖先文献失败</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load prior works:', error);
+                document.getElementById('prior-works-content').innerHTML =
+                    '<p class="text-muted">网络错误</p>';
+            }
+        }
+
+        // 渲染祖先文献
+        function renderPriorWorks(priorWorks) {
+            const container = document.getElementById('prior-works-content');
+
+            if (priorWorks.length === 0) {
+                container.innerHTML = '<p class="text-muted">未找到相关的祖先文献</p>';
+                return;
+            }
+
+            let html = `<h6 class="mb-3">共找到 ${priorWorks.length} 篇祖先文献</h6>`;
+
+            priorWorks.forEach(paper => {
+                html += `
+                    <div class="paper-item" onclick="showNodeDetails(${JSON.stringify(paper).replace(/"/g, '&quot;')})">
+                        <div class="paper-title">${paper.title}</div>
+                        <div class="paper-meta">
+                            ${paper.authors.slice(0, 2).join(', ')}${paper.authors.length > 2 ? ' 等' : ''} |
+                            ${paper.journal} | ${paper.pub_year}
+                        </div>
+                        <div class="paper-score">相似度: ${(paper.similarity_score * 100).toFixed(1)}%</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 加载后代文献
+        async function loadDerivativeWorks(paperId) {
+            try {
+                const response = await fetch(`/api/literature_tracking/derivative_works/${paperId}`, {
+                    headers: {
+                        'sid': currentSessionId
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    renderDerivativeWorks(data.derivative_works);
+                } else {
+                    document.getElementById('derivative-works-content').innerHTML =
+                        '<p class="text-muted">加载后代文献失败</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load derivative works:', error);
+                document.getElementById('derivative-works-content').innerHTML =
+                    '<p class="text-muted">网络错误</p>';
+            }
+        }
+
+        // 渲染后代文献
+        function renderDerivativeWorks(derivativeWorks) {
+            const container = document.getElementById('derivative-works-content');
+
+            if (derivativeWorks.length === 0) {
+                container.innerHTML = '<p class="text-muted">未找到相关的后代文献</p>';
+                return;
+            }
+
+            let html = `<h6 class="mb-3">共找到 ${derivativeWorks.length} 篇后代文献</h6>`;
+
+            derivativeWorks.forEach(paper => {
+                html += `
+                    <div class="paper-item" onclick="showNodeDetails(${JSON.stringify(paper).replace(/"/g, '&quot;')})">
+                        <div class="paper-title">${paper.title}</div>
+                        <div class="paper-meta">
+                            ${paper.authors.slice(0, 2).join(', ')}${paper.authors.length > 2 ? ' 等' : ''} |
+                            ${paper.journal} | ${paper.pub_year}
+                        </div>
+                        <div class="paper-score">相似度: ${(paper.similarity_score * 100).toFixed(1)}%</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 更新统计信息
+        function updateStatistics(stats) {
+            document.getElementById('node-count').textContent = stats.total_nodes;
+            document.getElementById('edge-count').textContent = stats.total_edges;
+            document.getElementById('cluster-count').textContent = '1'; // 简化处理
+        }
+
+        // 重置图谱视图
+        function resetGraph() {
+            if (svg) {
+                const containerRect = svg.node().getBoundingClientRect();
+                const transform = d3.zoomIdentity.translate(0, 0).scale(1);
+                svg.transition().duration(750).call(
+                    d3.zoom().transform,
+                    transform
+                );
+            }
+        }
+
+        // 导出图谱
+        function exportGraph() {
+            if (!networkData) {
+                showError('没有可导出的图谱数据');
+                return;
+            }
+
+            // 导出为JSON格式
+            const dataStr = JSON.stringify(networkData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `literature_network_${new Date().toISOString().slice(0, 10)}.json`;
+            link.click();
+
+            showSuccess('图谱数据已导出');
+        }
+
+        // 显示加载状态
+        function showLoading(show) {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = show ? 'flex' : 'none';
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            showToast(message, 'error');
+        }
+
+        // 显示成功消息
+        function showSuccess(message) {
+            showToast(message, 'success');
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            // 创建toast容器（如果不存在）
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        // 窗口大小改变时重新调整图谱
+        window.addEventListener('resize', function() {
+            if (svg) {
+                const container = document.getElementById('network-graph');
+                const containerRect = container.getBoundingClientRect();
+                svg.attr('width', containerRect.width)
+                   .attr('height', containerRect.height);
+
+                if (simulation) {
+                    simulation.force('center', d3.forceCenter(containerRect.width / 2, containerRect.height / 2));
+                    simulation.alpha(0.3).restart();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

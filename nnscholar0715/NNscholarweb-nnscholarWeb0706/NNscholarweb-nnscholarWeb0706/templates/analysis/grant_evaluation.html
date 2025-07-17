@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基金立项评估 - NNScholar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #f59e0b;
+            display: none;
+        }
+
+        .result-section h3 {
+            color: #f59e0b;
+            margin-bottom: 15px;
+        }
+
+        .result-content {
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-1px);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #f59e0b;
+            background: #fef3c7;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.close()">← 返回</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>💰 基金立项评估</h1>
+            <p>科研基金申请评估与优化建议</p>
+        </div>
+        
+        <div class="content">
+            <form id="grantEvaluationForm">
+                <div class="form-group">
+                    <label for="projectTitle">📝 项目标题 *</label>
+                    <input type="text" id="projectTitle" required 
+                           placeholder="请输入您的科研项目标题">
+                </div>
+
+                <div class="form-group">
+                    <label for="fundingType">💰 基金类型 *</label>
+                    <select id="fundingType" required>
+                        <option value="">请选择基金类型</option>
+                        <option value="nsfc-general">国家自然科学基金-面上项目</option>
+                        <option value="nsfc-youth">国家自然科学基金-青年项目</option>
+                        <option value="nsfc-key">国家自然科学基金-重点项目</option>
+                        <option value="nsfc-major">国家自然科学基金-重大项目</option>
+                        <option value="provincial">省级科技计划项目</option>
+                        <option value="ministry">部委科技计划项目</option>
+                        <option value="enterprise">企业合作项目</option>
+                        <option value="international">国际合作项目</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="researchBackground">🔬 研究背景 *</label>
+                    <textarea id="researchBackground" required 
+                              placeholder="请详细描述您的研究背景、现状分析和存在的科学问题"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="researchObjectives">🎯 研究目标</label>
+                    <textarea id="researchObjectives" 
+                              placeholder="请描述您的研究目标、预期成果和创新点"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="researchContent">📋 研究内容</label>
+                    <textarea id="researchContent" 
+                              placeholder="请详细描述研究内容、技术路线和实施方案"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>👥 团队信息</label>
+                    <div class="input-grid">
+                        <input type="text" id="principalInvestigator" placeholder="项目负责人">
+                        <input type="text" id="institution" placeholder="所属单位">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="researchField">🔬 研究领域</label>
+                    <select id="researchField">
+                        <option value="">请选择主要研究领域</option>
+                        <option value="mathematics">数理科学</option>
+                        <option value="chemistry">化学科学</option>
+                        <option value="life-sciences">生命科学</option>
+                        <option value="earth-sciences">地球科学</option>
+                        <option value="engineering">工程与材料科学</option>
+                        <option value="information">信息科学</option>
+                        <option value="management">管理科学</option>
+                        <option value="medical">医学科学</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>💡 评估重点</label>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="innovation" value="innovation">
+                            <label for="innovation">创新性评估</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="feasibility" value="feasibility">
+                            <label for="feasibility">可行性分析</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="significance" value="significance">
+                            <label for="significance">科学意义</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="team-strength" value="team-strength">
+                            <label for="team-strength">团队实力</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="budget" value="budget">
+                            <label for="budget">预算合理性</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="risk" value="risk">
+                            <label for="risk">风险评估</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>💰 预算信息</label>
+                    <div class="input-grid">
+                        <input type="number" id="totalBudget" placeholder="总预算（万元）" step="0.1" min="0">
+                        <input type="number" id="projectDuration" placeholder="项目周期（年）" step="0.5" min="0.5">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="additionalInfo">📝 其他信息</label>
+                    <textarea id="additionalInfo" 
+                              placeholder="请提供其他需要评估的信息，如前期基础、预期困难、国际合作等"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    🔍 开始评估
+                </button>
+            </form>
+
+            <div class="result-section" id="resultSection">
+                <h3>📊 基金立项评估报告</h3>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('grantEvaluationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const resultSection = document.getElementById('resultSection');
+            const resultContent = document.getElementById('resultContent');
+
+            // 获取表单数据
+            const formData = {
+                projectTitle: document.getElementById('projectTitle').value,
+                fundingType: document.getElementById('fundingType').value,
+                researchBackground: document.getElementById('researchBackground').value,
+                researchObjectives: document.getElementById('researchObjectives').value,
+                researchContent: document.getElementById('researchContent').value,
+                principalInvestigator: document.getElementById('principalInvestigator').value,
+                institution: document.getElementById('institution').value,
+                researchField: document.getElementById('researchField').value,
+                evaluationFocus: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value),
+                totalBudget: document.getElementById('totalBudget').value,
+                projectDuration: document.getElementById('projectDuration').value,
+                additionalInfo: document.getElementById('additionalInfo').value
+            };
+
+            if (!formData.projectTitle.trim() || !formData.fundingType || !formData.researchBackground.trim()) {
+                alert('请填写项目标题、基金类型和研究背景');
+                return;
+            }
+
+            // 显示加载状态
+            submitBtn.disabled = true;
+            submitBtn.textContent = '🔄 评估中...';
+            resultSection.style.display = 'block';
+            resultContent.innerHTML = '<div class="loading">🔄 AI正在对您的基金项目进行全面评估，请稍候...</div>';
+
+            try {
+                // 构建专业提示词
+                const prompt = `作为科研基金评估专家，请对以下基金项目进行全面评估：
+
+项目标题：${formData.projectTitle}
+基金类型：${formData.fundingType}
+研究背景：${formData.researchBackground}
+研究目标：${formData.researchObjectives || '未提供'}
+研究内容：${formData.researchContent || '未提供'}
+项目负责人：${formData.principalInvestigator || '未提供'}
+所属单位：${formData.institution || '未提供'}
+研究领域：${formData.researchField || '未指定'}
+评估重点：${formData.evaluationFocus.join(', ') || '全面评估'}
+总预算：${formData.totalBudget || '未提供'}万元
+项目周期：${formData.projectDuration || '未提供'}年
+其他信息：${formData.additionalInfo || '无'}
+
+请从以下维度进行专业评估：
+
+1. **创新性评估**
+   - 科学问题的创新性
+   - 研究方法的创新性
+   - 预期成果的创新性
+
+2. **科学意义与价值**
+   - 理论意义
+   - 实用价值
+   - 社会影响
+
+3. **可行性分析**
+   - 技术可行性
+   - 时间安排合理性
+   - 资源配置合理性
+
+4. **团队实力评估**
+   - 负责人能力
+   - 团队结构
+   - 研究基础
+
+5. **预算合理性**
+   - 预算分配
+   - 成本效益
+   - 资金使用计划
+
+6. **风险评估**
+   - 技术风险
+   - 进度风险
+   - 市场风险
+
+7. **改进建议**
+   - 具体优化方案
+   - 申请策略建议
+   - 成功率提升建议
+
+8. **综合评分**
+   - 各维度评分（1-10分）
+   - 总体评价
+   - 资助建议
+
+请提供详细、专业、实用的评估报告。`;
+
+                // 发送请求
+                const response = await fetch('/api/deepseek_analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        expert_type: '基金立项评估专家'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 格式化显示结果
+                    const formattedResult = data.analysis.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    resultContent.innerHTML = formattedResult;
+                } else {
+                    resultContent.innerHTML = `<div style="color: #ef4444;">❌ 评估失败: ${data.error}</div>`;
+                }
+            } catch (error) {
+                console.error('评估错误:', error);
+                resultContent.innerHTML = `<div style="color: #ef4444;">❌ 评估过程中出现错误: ${error.message}</div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🔍 开始评估';
+            }
+        });
+    </script>
+</body>
+</html>

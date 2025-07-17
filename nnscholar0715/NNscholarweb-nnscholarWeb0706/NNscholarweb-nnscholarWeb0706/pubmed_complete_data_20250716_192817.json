@@ -1,0 +1,687 @@
+{
+  "search_query": "(\"NATURE REVIEWS MOLECULAR CELL BIOLOGY\"[Journal]) AND ((\"2024\"[Date - Create] : \"2025\"[Date - Create]))",
+  "search_time": "2025-07-16T19:28:17.266414",
+  "total_papers": 5,
+  "papers": [
+    {
+      "pmid": "40659789",
+      "status": "Publisher",
+      "owner": "NLM",
+      "version": "1",
+      "title": "Degrons: defining the rules of protein degradation.",
+      "vernacular_title": "",
+      "language": "eng",
+      "pub_model": "Print-Electronic",
+      "abstract_parts": [
+        {
+          "text": "Degrons are pivotal components of the ubiquitin-proteasome system, serving as the recognition determinants through which E3 ubiquitin ligases identify their substrates. Degrons have central roles in both protein quality control and intracellular signalling pathways, and mutations that dysregulate degron activity are associated with a wide range of diseases, including cancer, immunological disorders and neurodegeneration. The number of well-defined degrons remains sparse relative to the ~600 E3 ubiquitin ligases encoded in the human genome. Recent advances in high-throughput degron discovery technologies have accelerated progress in this area, expanding the number of N- and C-terminal degrons, internal degrons and ubiquitin-independent degrons defined experimentally at high resolution. In this Review, we discuss the latest insights into the molecular mechanisms through which degrons act, their functional importance and their relevance in human disease, and consider how bifunctional molecules harness degrons to enable targeted protein degradation for therapeutic benefit.",
+          "label": "",
+          "nlm_category": ""
+        }
+      ],
+      "abstract_full": "Degrons are pivotal components of the ubiquitin-proteasome system, serving as the recognition determinants through which E3 ubiquitin ligases identify their substrates. Degrons have central roles in both protein quality control and intracellular signalling pathways, and mutations that dysregulate degron activity are associated with a wide range of diseases, including cancer, immunological disorders and neurodegeneration. The number of well-defined degrons remains sparse relative to the ~600 E3 ubiquitin ligases encoded in the human genome. Recent advances in high-throughput degron discovery technologies have accelerated progress in this area, expanding the number of N- and C-terminal degrons, internal degrons and ubiquitin-independent degrons defined experimentally at high resolution. In this Review, we discuss the latest insights into the molecular mechanisms through which degrons act, their functional importance and their relevance in human disease, and consider how bifunctional molecules harness degrons to enable targeted protein degradation for therapeutic benefit.",
+      "copyright": "© 2025. Springer Nature Limited.",
+      "authors": [
+        {
+          "last_name": "Zhang",
+          "fore_name": "Zhiqian",
+          "initials": "Z",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Department of Genetics, Harvard Medical School, Division of Genetics, Brigham and Women's Hospital, Howard Hughes Medical Institute, Boston, MA, USA.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Mena",
+          "fore_name": "Elijah L",
+          "initials": "EL",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Department of Genetics, Harvard Medical School, Division of Genetics, Brigham and Women's Hospital, Howard Hughes Medical Institute, Boston, MA, USA.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Timms",
+          "fore_name": "Richard T",
+          "initials": "RT",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Cambridge Institute of Therapeutic Immunology and Infectious Disease, Department of Medicine, University of Cambridge, Cambridge, UK. rtt20@cam.ac.uk.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Koren",
+          "fore_name": "Itay",
+          "initials": "I",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "The Mina and Everard Goodman Faculty of Life Sciences, Bar-Ilan University, Ramat-Gan, Israel. itay.koren@biu.ac.il.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Elledge",
+          "fore_name": "Stephen J",
+          "initials": "SJ",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Department of Genetics, Harvard Medical School, Division of Genetics, Brigham and Women's Hospital, Howard Hughes Medical Institute, Boston, MA, USA. selledge@genetics.med.harvard.edu.",
+              "identifier": ""
+            }
+          ]
+        }
+      ],
+      "investigators": [],
+      "journal_title": "Nature reviews. Molecular cell biology",
+      "journal_iso_abbrev": "Nat Rev Mol Cell Biol",
+      "issn": "1471-0080",
+      "issn_type": "Electronic",
+      "volume": "",
+      "issue": "",
+      "cited_medium": "Internet",
+      "pub_year": "2025",
+      "pub_month": "Jul",
+      "pub_day": "14",
+      "medline_date": "",
+      "season": "",
+      "mesh_terms": [],
+      "keyword_lists": [],
+      "chemicals": [],
+      "publication_types": [
+        {
+          "publication_type": "Journal Article",
+          "ui": "D016428"
+        },
+        {
+          "publication_type": "Review",
+          "ui": "D016454"
+        }
+      ],
+      "history": [
+        {
+          "pub_status": "accepted",
+          "year": "2025",
+          "month": "5",
+          "day": "29",
+          "hour": "",
+          "minute": ""
+        },
+        {
+          "pub_status": "medline",
+          "year": "2025",
+          "month": "7",
+          "day": "15",
+          "hour": "0",
+          "minute": "30"
+        },
+        {
+          "pub_status": "pubmed",
+          "year": "2025",
+          "month": "7",
+          "day": "15",
+          "hour": "0",
+          "minute": "30"
+        },
+        {
+          "pub_status": "entrez",
+          "year": "2025",
+          "month": "7",
+          "day": "14",
+          "hour": "23",
+          "minute": "27"
+        }
+      ],
+      "publication_status": "aheadofprint",
+      "date_revised": {
+        "year": "2025",
+        "month": "07",
+        "day": "14"
+      },
+      "article_ids": [
+        {
+          "id_type": "pubmed",
+          "id_value": "40659789"
+        },
+        {
+          "id_type": "doi",
+          "id_value": "10.1038/s41580-025-00870-z"
+        },
+        {
+          "id_type": "pii",
+          "id_value": "10.1038/s41580-025-00870-z"
+        }
+      ],
+      "comments_corrections": []
+    },
+    {
+      "pmid": "40629070",
+      "status": "Publisher",
+      "owner": "NLM",
+      "version": "1",
+      "title": "Kleptomaniac sea slugs steal their greens.",
+      "vernacular_title": "",
+      "language": "eng",
+      "pub_model": "Print-Electronic",
+      "abstract_parts": [],
+      "abstract_full": "",
+      "authors": [
+        {
+          "last_name": "Heinke",
+          "fore_name": "Lisa",
+          "initials": "L",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Nature Reviews Molecular Cell Biology, . nrm@nature.com.",
+              "identifier": ""
+            }
+          ]
+        }
+      ],
+      "investigators": [],
+      "journal_title": "Nature reviews. Molecular cell biology",
+      "journal_iso_abbrev": "Nat Rev Mol Cell Biol",
+      "issn": "1471-0080",
+      "issn_type": "Electronic",
+      "volume": "",
+      "issue": "",
+      "cited_medium": "Internet",
+      "pub_year": "2025",
+      "pub_month": "Jul",
+      "pub_day": "08",
+      "medline_date": "",
+      "season": "",
+      "mesh_terms": [],
+      "keyword_lists": [],
+      "chemicals": [],
+      "publication_types": [
+        {
+          "publication_type": "Journal Article",
+          "ui": "D016428"
+        }
+      ],
+      "history": [
+        {
+          "pub_status": "medline",
+          "year": "2025",
+          "month": "7",
+          "day": "9",
+          "hour": "0",
+          "minute": "27"
+        },
+        {
+          "pub_status": "pubmed",
+          "year": "2025",
+          "month": "7",
+          "day": "9",
+          "hour": "0",
+          "minute": "27"
+        },
+        {
+          "pub_status": "entrez",
+          "year": "2025",
+          "month": "7",
+          "day": "8",
+          "hour": "23",
+          "minute": "40"
+        }
+      ],
+      "publication_status": "aheadofprint",
+      "date_revised": {
+        "year": "2025",
+        "month": "07",
+        "day": "08"
+      },
+      "article_ids": [
+        {
+          "id_type": "pubmed",
+          "id_value": "40629070"
+        },
+        {
+          "id_type": "doi",
+          "id_value": "10.1038/s41580-025-00874-9"
+        },
+        {
+          "id_type": "pii",
+          "id_value": "10.1038/s41580-025-00874-9"
+        }
+      ],
+      "comments_corrections": []
+    },
+    {
+      "pmid": "40629069",
+      "status": "Publisher",
+      "owner": "NLM",
+      "version": "1",
+      "title": "A redox-auxin connection in response to water deficit.",
+      "vernacular_title": "",
+      "language": "eng",
+      "pub_model": "Print-Electronic",
+      "abstract_parts": [],
+      "abstract_full": "",
+      "authors": [
+        {
+          "last_name": "Baumann",
+          "fore_name": "Kim",
+          "initials": "K",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Nature Reviews Molecular Cell Biology, . nrm@nature.com.",
+              "identifier": ""
+            }
+          ]
+        }
+      ],
+      "investigators": [],
+      "journal_title": "Nature reviews. Molecular cell biology",
+      "journal_iso_abbrev": "Nat Rev Mol Cell Biol",
+      "issn": "1471-0080",
+      "issn_type": "Electronic",
+      "volume": "",
+      "issue": "",
+      "cited_medium": "Internet",
+      "pub_year": "2025",
+      "pub_month": "Jul",
+      "pub_day": "08",
+      "medline_date": "",
+      "season": "",
+      "mesh_terms": [],
+      "keyword_lists": [],
+      "chemicals": [],
+      "publication_types": [
+        {
+          "publication_type": "Journal Article",
+          "ui": "D016428"
+        }
+      ],
+      "history": [
+        {
+          "pub_status": "medline",
+          "year": "2025",
+          "month": "7",
+          "day": "9",
+          "hour": "0",
+          "minute": "27"
+        },
+        {
+          "pub_status": "pubmed",
+          "year": "2025",
+          "month": "7",
+          "day": "9",
+          "hour": "0",
+          "minute": "27"
+        },
+        {
+          "pub_status": "entrez",
+          "year": "2025",
+          "month": "7",
+          "day": "8",
+          "hour": "23",
+          "minute": "40"
+        }
+      ],
+      "publication_status": "aheadofprint",
+      "date_revised": {
+        "year": "2025",
+        "month": "07",
+        "day": "08"
+      },
+      "article_ids": [
+        {
+          "id_type": "pubmed",
+          "id_value": "40629069"
+        },
+        {
+          "id_type": "doi",
+          "id_value": "10.1038/s41580-025-00875-8"
+        },
+        {
+          "id_type": "pii",
+          "id_value": "10.1038/s41580-025-00875-8"
+        }
+      ],
+      "comments_corrections": []
+    },
+    {
+      "pmid": "40610778",
+      "status": "Publisher",
+      "owner": "NLM",
+      "version": "1",
+      "title": "Molecular machineries and pathways of mitochondrial protein transport.",
+      "vernacular_title": "",
+      "language": "eng",
+      "pub_model": "Print-Electronic",
+      "abstract_parts": [
+        {
+          "text": "Mitochondria contain about 1,000-1,500 different proteins, most of which are encoded by the nuclear genome and synthesized in the cytosol, although a handful are specified by the mitochondrial DNA and translated within mitochondria. The coordinated transport of nucleus-encoded proteins into mitochondria, followed by their proper folding, assembly and/or integration into mitochondrial membranes, is central to mitochondrial biogenesis. In this Review, we describe the pathways and machineries for protein transport across and insertion into the inner and outer mitochondrial membranes, as well as the targeting and sorting signals, and energy requirements for these processes. These machineries include the TOM and SAM complexes in the outer membrane and the TIM complexes in the inner membrane, and some components in the intermembrane space. We emphasize recent developments in our understanding of the protein structures of the transport machineries and discuss mechanisms for the shift of protein localization and correction of mislocalization.",
+          "label": "",
+          "nlm_category": ""
+        }
+      ],
+      "abstract_full": "Mitochondria contain about 1,000-1,500 different proteins, most of which are encoded by the nuclear genome and synthesized in the cytosol, although a handful are specified by the mitochondrial DNA and translated within mitochondria. The coordinated transport of nucleus-encoded proteins into mitochondria, followed by their proper folding, assembly and/or integration into mitochondrial membranes, is central to mitochondrial biogenesis. In this Review, we describe the pathways and machineries for protein transport across and insertion into the inner and outer mitochondrial membranes, as well as the targeting and sorting signals, and energy requirements for these processes. These machineries include the TOM and SAM complexes in the outer membrane and the TIM complexes in the inner membrane, and some components in the intermembrane space. We emphasize recent developments in our understanding of the protein structures of the transport machineries and discuss mechanisms for the shift of protein localization and correction of mislocalization.",
+      "copyright": "© 2025. Springer Nature Limited.",
+      "authors": [
+        {
+          "last_name": "Endo",
+          "fore_name": "Toshiya",
+          "initials": "T",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Faculty of Life Sciences, Kyoto Sangyo University, Kyoto, Japan. tendo@cc.kyoto-su.ac.jp.",
+              "identifier": ""
+            },
+            {
+              "affiliation": "Institute for Protein Dynamics, Kyoto Sangyo University, Kyoto, Japan. tendo@cc.kyoto-su.ac.jp.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Wiedemann",
+          "fore_name": "Nils",
+          "initials": "N",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Institute of Biochemistry and Molecular Biology, ZBMZ, Faculty of Medicine, University of Freiburg, Freiburg, Germany. nils.wiedemann@biochemie.uni-freiburg.de.",
+              "identifier": ""
+            },
+            {
+              "affiliation": "CIBSS Centre for Integrative Biological Signalling Studies, University of Freiburg, Freiburg, Germany. nils.wiedemann@biochemie.uni-freiburg.de.",
+              "identifier": ""
+            },
+            {
+              "affiliation": "BIOSS Centre for Biological Signalling Studies, University of Freiburg, Freiburg, Germany. nils.wiedemann@biochemie.uni-freiburg.de.",
+              "identifier": ""
+            }
+          ]
+        }
+      ],
+      "investigators": [],
+      "journal_title": "Nature reviews. Molecular cell biology",
+      "journal_iso_abbrev": "Nat Rev Mol Cell Biol",
+      "issn": "1471-0080",
+      "issn_type": "Electronic",
+      "volume": "",
+      "issue": "",
+      "cited_medium": "Internet",
+      "pub_year": "2025",
+      "pub_month": "Jul",
+      "pub_day": "03",
+      "medline_date": "",
+      "season": "",
+      "mesh_terms": [],
+      "keyword_lists": [],
+      "chemicals": [],
+      "publication_types": [
+        {
+          "publication_type": "Journal Article",
+          "ui": "D016428"
+        },
+        {
+          "publication_type": "Review",
+          "ui": "D016454"
+        }
+      ],
+      "history": [
+        {
+          "pub_status": "accepted",
+          "year": "2025",
+          "month": "5",
+          "day": "22",
+          "hour": "",
+          "minute": ""
+        },
+        {
+          "pub_status": "medline",
+          "year": "2025",
+          "month": "7",
+          "day": "4",
+          "hour": "0",
+          "minute": "27"
+        },
+        {
+          "pub_status": "pubmed",
+          "year": "2025",
+          "month": "7",
+          "day": "4",
+          "hour": "0",
+          "minute": "27"
+        },
+        {
+          "pub_status": "entrez",
+          "year": "2025",
+          "month": "7",
+          "day": "3",
+          "hour": "23",
+          "minute": "35"
+        }
+      ],
+      "publication_status": "aheadofprint",
+      "date_revised": {
+        "year": "2025",
+        "month": "07",
+        "day": "03"
+      },
+      "article_ids": [
+        {
+          "id_type": "pubmed",
+          "id_value": "40610778"
+        },
+        {
+          "id_type": "doi",
+          "id_value": "10.1038/s41580-025-00865-w"
+        },
+        {
+          "id_type": "pii",
+          "id_value": "10.1038/s41580-025-00865-w"
+        }
+      ],
+      "comments_corrections": []
+    },
+    {
+      "pmid": "40603684",
+      "status": "Publisher",
+      "owner": "NLM",
+      "version": "1",
+      "title": "Regulation of inflammatory processes by caspases.",
+      "vernacular_title": "",
+      "language": "eng",
+      "pub_model": "Print-Electronic",
+      "abstract_parts": [
+        {
+          "text": "Historically, mammalian caspases (a group of cysteine proteases) have been catalogued into two main families based on major biological function: inflammatory caspases and apoptotic caspases. Accumulating evidence from preclinical models, however, argues against such a clearcut distinction, for two main reasons. First, at least in mammals, apoptotic caspases are generally dispensable for cells to succumb to apoptotic stimuli but instead regulate the kinetic and microenvironmental manifestations of the cellular demise in the context of a complex interplay with other cell death pathways. Second, most (if not all) mammalian caspases have evolved into positive or negative regulators of inflammatory processes, either directly or via their ability to control apoptotic and non-apoptotic cell death modalities. Here we discuss the molecular mechanisms through which mammalian caspases regulate inflammation, with emphasis on the ability of apoptotic caspases to suppress inflammatory responses in support of preserved organismal homeostasis.",
+          "label": "",
+          "nlm_category": ""
+        }
+      ],
+      "abstract_full": "Historically, mammalian caspases (a group of cysteine proteases) have been catalogued into two main families based on major biological function: inflammatory caspases and apoptotic caspases. Accumulating evidence from preclinical models, however, argues against such a clearcut distinction, for two main reasons. First, at least in mammals, apoptotic caspases are generally dispensable for cells to succumb to apoptotic stimuli but instead regulate the kinetic and microenvironmental manifestations of the cellular demise in the context of a complex interplay with other cell death pathways. Second, most (if not all) mammalian caspases have evolved into positive or negative regulators of inflammatory processes, either directly or via their ability to control apoptotic and non-apoptotic cell death modalities. Here we discuss the molecular mechanisms through which mammalian caspases regulate inflammation, with emphasis on the ability of apoptotic caspases to suppress inflammatory responses in support of preserved organismal homeostasis.",
+      "copyright": "© 2025. Springer Nature Limited.",
+      "authors": [
+        {
+          "last_name": "Beltrán-Visiedo",
+          "fore_name": "Manuel",
+          "initials": "M",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Cancer Signaling and Microenvironment Program, Fox Chase Cancer Center, Philadelphia, PA, USA.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Soler-Agesta",
+          "fore_name": "Ruth",
+          "initials": "R",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Department of Radiation Oncology, Weill Cornell Medicine, New York, NY, USA.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Sarosiek",
+          "fore_name": "Kristopher A",
+          "initials": "KA",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "John B. Little Center for Radiation Sciences, Harvard T.H. Chan School of Public Health, Boston, MA, USA.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Green",
+          "fore_name": "Douglas R",
+          "initials": "DR",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Department of Immunology, St. Jude's Children Hospital, Memphis, TN, USA.",
+              "identifier": ""
+            }
+          ]
+        },
+        {
+          "last_name": "Galluzzi",
+          "fore_name": "Lorenzo",
+          "initials": "L",
+          "suffix": "",
+          "collective_name": "",
+          "valid": "Y",
+          "affiliations": [
+            {
+              "affiliation": "Cancer Signaling and Microenvironment Program, Fox Chase Cancer Center, Philadelphia, PA, USA. deadoc80@gmail.com.",
+              "identifier": ""
+            }
+          ]
+        }
+      ],
+      "investigators": [],
+      "journal_title": "Nature reviews. Molecular cell biology",
+      "journal_iso_abbrev": "Nat Rev Mol Cell Biol",
+      "issn": "1471-0080",
+      "issn_type": "Electronic",
+      "volume": "",
+      "issue": "",
+      "cited_medium": "Internet",
+      "pub_year": "2025",
+      "pub_month": "Jul",
+      "pub_day": "02",
+      "medline_date": "",
+      "season": "",
+      "mesh_terms": [],
+      "keyword_lists": [],
+      "chemicals": [],
+      "publication_types": [
+        {
+          "publication_type": "Journal Article",
+          "ui": "D016428"
+        },
+        {
+          "publication_type": "Review",
+          "ui": "D016454"
+        }
+      ],
+      "history": [
+        {
+          "pub_status": "accepted",
+          "year": "2025",
+          "month": "5",
+          "day": "30",
+          "hour": "",
+          "minute": ""
+        },
+        {
+          "pub_status": "medline",
+          "year": "2025",
+          "month": "7",
+          "day": "3",
+          "hour": "0",
+          "minute": "27"
+        },
+        {
+          "pub_status": "pubmed",
+          "year": "2025",
+          "month": "7",
+          "day": "3",
+          "hour": "0",
+          "minute": "27"
+        },
+        {
+          "pub_status": "entrez",
+          "year": "2025",
+          "month": "7",
+          "day": "2",
+          "hour": "23",
+          "minute": "38"
+        }
+      ],
+      "publication_status": "aheadofprint",
+      "date_revised": {
+        "year": "2025",
+        "month": "07",
+        "day": "02"
+      },
+      "article_ids": [
+        {
+          "id_type": "pubmed",
+          "id_value": "40603684"
+        },
+        {
+          "id_type": "doi",
+          "id_value": "10.1038/s41580-025-00869-6"
+        },
+        {
+          "id_type": "pii",
+          "id_value": "10.1038/s41580-025-00869-6"
+        }
+      ],
+      "comments_corrections": []
+    }
+  ]
+}

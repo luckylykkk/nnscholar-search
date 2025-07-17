@@ -1,9 +1,0 @@
-[33m9a1b36e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;33mtag: [m[1;33mv2.171[m[33m)[m feat: v2.171 - integrate silicon-based flow API
-[33meb26523[m[33m ([m[1;33mtag: [m[1;33mv2.159[m[33m, [m[1;31morigin/main[m[33m)[m feat: 更新到版本2.159 - 更新app.py核心功能 - 优化index.html页面布局
-[33mc20699b[m[33m ([m[1;33mtag: [m[1;33mv2.151[m[33m)[m feat: 更新到版本2.151 - 修复Tkinter图像处理问题 - 优化热力图生成逻辑 - 改进错误处理机制
-[33md448732[m[33m ([m[1;33mtag: [m[1;33mv2.149[m[33m, [m[1;32mv2.141-branch[m[33m)[m Update version 2.141: Describe the specific changes
-[33m7f1e5fe[m[33m ([m[1;33mtag: [m[1;33mv2.141[m[33m, [m[1;31morigin/master[m[33m, [m[1;32mv2.141-dev[m[33m)[m Create README.md
-[33mae955e1[m v2.133.1: 优化文献排序算法 - 调整相关度权重为80%，影响因子权重为20%，优先显示相关度高的文献
-[33m863cfd3[m[33m ([m[1;33mtag: [m[1;33mv2.133[m[33m)[m v2.133: 添加自动导出文档功能 - 新增Word文档导出功能，支持同时导出Excel和Word格式的文献报告 - 优化了文献相关性计算和检索策略生成 - 完善了热点分析功能，支持可视化展示
-[33m4175429[m[33m ([m[1;33mtag: [m[1;33mv2.132[m[33m)[m Initial commit: NNScholar v2.132 - Medical Literature Search and Analysis System
-[33m698fb21[m[33m ([m[1;33mtag: [m[1;33mv2.13[m[33m)[m NNscholar2.13 - 优化相关度计算和日志输出

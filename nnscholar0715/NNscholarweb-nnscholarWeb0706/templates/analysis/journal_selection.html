@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI投稿选刊 - NNScholar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #3b82f6;
+            display: none;
+        }
+
+        .result-section h3 {
+            color: #3b82f6;
+            margin-bottom: 15px;
+        }
+
+        .result-content {
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.close()">← 返回</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📊 AI投稿选刊</h1>
+            <p>基于研究内容智能推荐最合适的期刊</p>
+        </div>
+        
+        <div class="content">
+            <form id="journalSelectionForm">
+                <div class="form-group">
+                    <label for="paperTitle">📝 论文标题 *</label>
+                    <input type="text" id="paperTitle" required 
+                           placeholder="请输入您的论文标题">
+                </div>
+
+                <div class="form-group">
+                    <label for="paperAbstract">📄 论文摘要 *</label>
+                    <textarea id="paperAbstract" required 
+                              placeholder="请粘贴您的论文摘要，这将帮助AI更准确地推荐期刊"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="researchField">🔬 研究领域</label>
+                    <select id="researchField">
+                        <option value="">请选择主要研究领域</option>
+                        <option value="medicine">医学</option>
+                        <option value="biology">生物学</option>
+                        <option value="chemistry">化学</option>
+                        <option value="physics">物理学</option>
+                        <option value="engineering">工程学</option>
+                        <option value="computer-science">计算机科学</option>
+                        <option value="materials">材料科学</option>
+                        <option value="environmental">环境科学</option>
+                        <option value="social-science">社会科学</option>
+                        <option value="economics">经济学</option>
+                        <option value="psychology">心理学</option>
+                        <option value="education">教育学</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>🎯 期刊偏好</label>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="highImpact" value="high-impact">
+                            <label for="highImpact">高影响因子期刊</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="openAccess" value="open-access">
+                            <label for="openAccess">开放获取期刊</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="fastReview" value="fast-review">
+                            <label for="fastReview">快速审稿期刊</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="scopusIndexed" value="scopus-indexed">
+                            <label for="scopusIndexed">Scopus收录</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📊 期望影响因子范围</label>
+                    <div class="input-grid">
+                        <input type="number" id="minImpactFactor" placeholder="最低影响因子" step="0.1" min="0">
+                        <input type="number" id="maxImpactFactor" placeholder="最高影响因子" step="0.1" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="keywords">🔍 关键词</label>
+                    <input type="text" id="keywords" 
+                           placeholder="请输入3-5个关键词，用逗号分隔">
+                </div>
+
+                <div class="form-group">
+                    <label for="additionalRequirements">📝 其他要求</label>
+                    <textarea id="additionalRequirements" 
+                              placeholder="请描述其他特殊要求，如地区偏好、语言要求、特定期刊类型等（可选）"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    🚀 获取期刊推荐
+                </button>
+            </form>
+
+            <div class="result-section" id="resultSection">
+                <h3>📊 期刊推荐结果</h3>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('journalSelectionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const resultSection = document.getElementById('resultSection');
+            const resultContent = document.getElementById('resultContent');
+
+            // 获取表单数据
+            const formData = {
+                paperTitle: document.getElementById('paperTitle').value,
+                paperAbstract: document.getElementById('paperAbstract').value,
+                researchField: document.getElementById('researchField').value,
+                journalPreferences: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value),
+                minImpactFactor: document.getElementById('minImpactFactor').value,
+                maxImpactFactor: document.getElementById('maxImpactFactor').value,
+                keywords: document.getElementById('keywords').value,
+                additionalRequirements: document.getElementById('additionalRequirements').value
+            };
+
+            if (!formData.paperTitle.trim() || !formData.paperAbstract.trim()) {
+                alert('请填写论文标题和摘要');
+                return;
+            }
+
+            // 显示加载状态
+            submitBtn.disabled = true;
+            submitBtn.textContent = '🔄 分析中...';
+            resultSection.style.display = 'block';
+            resultContent.innerHTML = '<div class="loading">🔄 AI正在分析您的论文内容并推荐合适的期刊，请稍候...</div>';
+
+            try {
+                // 构建专业提示词
+                const prompt = `作为期刊推荐专家，请为以下论文推荐最合适的期刊：
+
+论文标题：${formData.paperTitle}
+论文摘要：${formData.paperAbstract}
+研究领域：${formData.researchField || '未指定'}
+期刊偏好：${formData.journalPreferences.join(', ') || '无特殊偏好'}
+影响因子范围：${formData.minImpactFactor || '不限'} - ${formData.maxImpactFactor || '不限'}
+关键词：${formData.keywords || '未提供'}
+其他要求：${formData.additionalRequirements || '无'}
+
+请提供以下内容：
+1. 推荐5-8个最合适的期刊，按匹配度排序
+2. 每个期刊包含：
+   - 期刊名称和影响因子
+   - JCR分区信息
+   - 推荐理由和匹配度分析
+   - 投稿难度评估
+   - 审稿周期预估
+   - 开放获取政策
+3. 投稿策略建议
+4. 论文改进建议（如有必要）
+5. 备选期刊推荐
+
+请确保推荐准确、实用，并考虑期刊的声誉和影响力。`;
+
+                // 发送请求
+                const response = await fetch('/api/deepseek_analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        expert_type: 'AI投稿选刊专家'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 格式化显示结果
+                    const formattedResult = data.analysis.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    resultContent.innerHTML = formattedResult;
+                } else {
+                    resultContent.innerHTML = `<div style="color: #ef4444;">❌ 分析失败: ${data.error}</div>`;
+                }
+            } catch (error) {
+                console.error('分析错误:', error);
+                resultContent.innerHTML = `<div style="color: #ef4444;">❌ 分析过程中出现错误: ${error.message}</div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 获取期刊推荐';
+            }
+        });
+    </script>
+</body>
+</html>

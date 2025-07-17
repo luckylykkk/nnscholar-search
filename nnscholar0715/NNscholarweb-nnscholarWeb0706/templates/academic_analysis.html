@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if analysis_type == 'review_topic' %}综述选题建议{% elif analysis_type == 'research_topic' %}论著选题建议{% elif analysis_type == 'full_review' %}完整综述{% else %}学术分析结果{% endif %} - NNScholar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #8B5CF6;
+            --secondary-color: #6B7280;
+            --background-color: #FFFFFF;
+            --card-background: #FFFFFF;
+            --text-color: #1F2937;
+            --border-color: #E5E7EB;
+            --hover-color: #F3F4F6;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            padding-top: 70px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .navbar {
+            background: #FFFFFF;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+        }
+
+        .container {
+            max-width: 1200px;
+            padding: 0 20px;
+        }
+
+        .analysis-header {
+            background: linear-gradient(135deg, var(--primary-color), #A855F7);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .analysis-header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .analysis-header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .analysis-meta {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .meta-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .meta-label {
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+
+        .meta-value {
+            color: var(--text-color);
+        }
+
+        .analysis-content {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .analysis-content h3 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .analysis-content pre {
+            background-color: #F8F9FA;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+        }
+
+        .analysis-result-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+            margin: 0;
+        }
+
+        .analysis-result-content h1,
+        .analysis-result-content h2,
+        .analysis-result-content h3,
+        .analysis-result-content h4,
+        .analysis-result-content h5,
+        .analysis-result-content h6 {
+            color: var(--primary-color);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .analysis-result-content h1 { font-size: 1.8rem; }
+        .analysis-result-content h2 { font-size: 1.6rem; }
+        .analysis-result-content h3 { font-size: 1.4rem; }
+        .analysis-result-content h4 { font-size: 1.2rem; }
+        .analysis-result-content h5 { font-size: 1.1rem; }
+        .analysis-result-content h6 { font-size: 1rem; }
+
+        .analysis-result-content p {
+            margin-bottom: 1rem;
+        }
+
+        .analysis-result-content ul,
+        .analysis-result-content ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+
+        .analysis-result-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .analysis-result-content strong {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .analysis-result-content em {
+            font-style: italic;
+            color: var(--secondary-color);
+        }
+
+        .action-bar {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+
+        .btn-custom {
+            background-color: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            margin: 0.25rem;
+        }
+
+        .btn-custom:hover {
+            background-color: #7C3AED;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-custom {
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            background: transparent;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+            margin: 0.25rem;
+        }
+
+        .btn-outline-custom:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .loading .spinner-border {
+            color: var(--primary-color);
+        }
+
+        .error-message {
+            background-color: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #DC2626;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 1rem 0;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .analysis-header {
+                padding: 1.5rem;
+            }
+            
+            .analysis-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .analysis-content {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-graduation-cap me-2"></i>NNScholar
+            </a>
+            <div class="d-flex">
+                <a href="/" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-search me-1"></i>专业检索
+                </a>
+                <a href="/chat" class="btn btn-outline-secondary">
+                    <i class="fas fa-comments me-1"></i>智能聊天
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 面包屑导航 -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">首页</a></li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {% if analysis_type == 'review_topic' %}
+                        综述选题建议
+                    {% elif analysis_type == 'research_topic' %}
+                        论著选题建议
+                    {% elif analysis_type == 'full_review' %}
+                        完整综述
+                    {% else %}
+                        学术分析结果
+                    {% endif %}
+                </li>
+            </ol>
+        </nav>
+
+        <!-- 页面标题 -->
+        <div class="analysis-header">
+            <h1>
+                {% if analysis_type == 'review_topic' %}
+                    <i class="fas fa-lightbulb me-2"></i>综述选题建议
+                {% elif analysis_type == 'research_topic' %}
+                    <i class="fas fa-flask me-2"></i>论著选题建议
+                {% elif analysis_type == 'full_review' %}
+                    <i class="fas fa-file-alt me-2"></i>完整综述
+                {% else %}
+                    <i class="fas fa-chart-bar me-2"></i>学术分析结果
+                {% endif %}
+            </h1>
+            <p class="subtitle">
+                基于 {{ paper_count }} 篇相关文献的智能分析结果
+            </p>
+        </div>
+
+        <!-- 分析元信息 -->
+        <div class="analysis-meta">
+            <div class="meta-item">
+                <span class="meta-label">分析时间：</span>
+                <span class="meta-value">{{ analysis_time }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">文献数量：</span>
+                <span class="meta-value">{{ paper_count }} 篇</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">检索查询：</span>
+                <span class="meta-value">{{ search_query }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">分析类型：</span>
+                <span class="meta-value">
+                    {% if analysis_type == 'review_topic' %}
+                        综述选题建议分析
+                    {% elif analysis_type == 'research_topic' %}
+                        论著选题建议分析
+                    {% elif analysis_type == 'full_review' %}
+                        完整综述生成
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- 分析结果内容 -->
+        {% if error %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                分析过程中发生错误：{{ error }}
+            </div>
+        {% elif loading %}
+            <div class="loading">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">分析中...</span>
+                </div>
+                <p class="mt-3">正在进行智能分析，请稍候...</p>
+            </div>
+        {% else %}
+            <div class="analysis-content">
+                <h3>
+                    {% if analysis_type == 'review_topic' %}
+                        <i class="fas fa-lightbulb me-2"></i>综述选题建议
+                    {% elif analysis_type == 'research_topic' %}
+                        <i class="fas fa-flask me-2"></i>论著选题建议
+                    {% elif analysis_type == 'full_review' %}
+                        <i class="fas fa-file-alt me-2"></i>完整综述内容
+                    {% endif %}
+                </h3>
+                <div class="analysis-result-content">{{ analysis_result|safe }}</div>
+            </div>
+        {% endif %}
+
+        <!-- 操作栏 -->
+        <div class="action-bar">
+            <h5 class="mb-3">操作选项</h5>
+            <button class="btn btn-custom" onclick="copyToClipboard()">
+                <i class="fas fa-copy me-1"></i>复制内容
+            </button>
+            <button class="btn btn-outline-custom" onclick="printPage()">
+                <i class="fas fa-print me-1"></i>打印页面
+            </button>
+            <button class="btn btn-outline-custom" onclick="downloadTxt()">
+                <i class="fas fa-download me-1"></i>下载TXT
+            </button>
+            {% if analysis_type == 'full_review' %}
+            <button class="btn btn-outline-custom" onclick="downloadWord()">
+                <i class="fas fa-file-word me-1"></i>导出Word
+            </button>
+            {% endif %}
+            <a href="/" class="btn btn-outline-custom">
+                <i class="fas fa-arrow-left me-1"></i>返回检索
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 复制内容到剪贴板
+        function copyToClipboard() {
+            const content = document.querySelector('.analysis-result-content') || document.querySelector('.analysis-content pre');
+            if (content) {
+                navigator.clipboard.writeText(content.textContent).then(() => {
+                    showToast('内容已复制到剪贴板', 'success');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    showToast('复制失败，请手动选择文本复制', 'error');
+                });
+            }
+        }
+
+        // 打印页面
+        function printPage() {
+            window.print();
+        }
+
+        // 下载TXT文件
+        function downloadTxt() {
+            const content = document.querySelector('.analysis-result-content') || document.querySelector('.analysis-content pre');
+            if (content) {
+                const text = content.textContent;
+                const filename = `{{ analysis_type }}_analysis_${new Date().toISOString().slice(0, 10)}.txt`;
+
+                const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showToast('文件下载已开始', 'success');
+            }
+        }
+
+        // 导出Word文档
+        async function downloadWord() {
+            try {
+                showToast('正在生成Word文档...', 'info');
+
+                // 准备综述数据
+                const reviewData = {
+                    title: '{{ title if title else (query + " - 文献综述") }}',
+                    content: document.querySelector('.analysis-result-content').innerHTML || document.querySelector('.analysis-content').innerHTML,
+                    analysis_type: '{{ analysis_type }}',
+                    query: '{{ query }}',
+                    generated_at: '{{ generated_at }}',
+                    paper_count: {{ paper_count if paper_count else 0 }},
+                    word_count: {{ word_count if word_count else 0 }},
+                    reference_count: {{ reference_count if reference_count else 0 }}
+                };
+
+                // 发送导出请求
+                const response = await fetch('/api/export/review_word', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ review_data: reviewData })
+                });
+
+                if (response.ok) {
+                    // 下载文件
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${reviewData.title}.docx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    showToast('Word文档导出成功', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showToast(`导出失败: ${errorData.error || '未知错误'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Word导出失败:', error);
+                showToast('Word文档导出失败，请重试', 'error');
+            }
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container') || createToastContainer();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        // 创建Toast容器
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 如果是加载状态，可以添加一些动态效果
+            const loadingElement = document.querySelector('.loading');
+            if (loadingElement) {
+                // 可以添加一些加载动画或定期检查状态的逻辑
+            }
+        });
+    </script>
+</body>
+</html>

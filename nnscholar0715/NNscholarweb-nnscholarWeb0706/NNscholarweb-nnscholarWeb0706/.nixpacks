@@ -1,0 +1,11 @@
+build:
+  phases:
+    setup:
+      - apt-get update
+      - apt-get install -y python3-dev build-essential
+    build:
+      - pip install --upgrade pip
+      - pip install -r requirements.txt
+  providers:
+    python:
+      version: 3.12.3 

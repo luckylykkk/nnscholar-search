@@ -1,0 +1,417 @@
+{
+  "analysis_time": "2025-07-16T20:01:03.530662",
+  "summary": {
+    "total_journals_analyzed": 12,
+    "journals_with_review_data": 9
+  },
+  "journal_stats": {
+    "Nature": {
+      "date_availability": {
+        "received_count": 30,
+        "accepted_count": 30,
+        "published_count": 100,
+        "complete_cycle_count": 26
+      },
+      "review_cycle": {
+        "count": 15,
+        "mean_days": 225.3,
+        "median_days": 227,
+        "min_days": 104,
+        "max_days": 361,
+        "std_days": 67.3
+      },
+      "publication_cycle": {
+        "count": 30,
+        "mean_days": 34.7,
+        "median_days": 34.5,
+        "min_days": 7,
+        "max_days": 83,
+        "std_days": 14.7
+      },
+      "total_cycle": {
+        "count": 26,
+        "mean_days": 367.3,
+        "median_days": 349.5,
+        "min_days": 138,
+        "max_days": 691,
+        "std_days": 152.8
+      },
+      "total_papers": 100,
+      "journal_name": "Nature"
+    },
+    "Science": {
+      "date_availability": {
+        "received_count": 0,
+        "accepted_count": 0,
+        "published_count": 100,
+        "complete_cycle_count": 0
+      },
+      "review_cycle": {
+        "count": 0,
+        "mean_days": 0,
+        "median_days": 0,
+        "min_days": 0,
+        "max_days": 0,
+        "std_days": 0
+      },
+      "publication_cycle": {
+        "count": 0,
+        "mean_days": 0,
+        "median_days": 0,
+        "min_days": 0,
+        "max_days": 0,
+        "std_days": 0
+      },
+      "total_cycle": {
+        "count": 0,
+        "mean_days": 0,
+        "median_days": 0,
+        "min_days": 0,
+        "max_days": 0,
+        "std_days": 0
+      },
+      "total_papers": 100,
+      "journal_name": "Science"
+    },
+    "Cell": {
+      "date_availability": {
+        "received_count": 97,
+        "accepted_count": 97,
+        "published_count": 100,
+        "complete_cycle_count": 92
+      },
+      "review_cycle": {
+        "count": 70,
+        "mean_days": 183.0,
+        "median_days": 188.5,
+        "min_days": 4,
+        "max_days": 348,
+        "std_days": 105.0
+      },
+      "publication_cycle": {
+        "count": 97,
+        "mean_days": 33.6,
+        "median_days": 24,
+        "min_days": 14,
+        "max_days": 94,
+        "std_days": 21.3
+      },
+      "total_cycle": {
+        "count": 92,
+        "mean_days": 278.1,
+        "median_days": 244.5,
+        "min_days": 34,
+        "max_days": 694,
+        "std_days": 151.2
+      },
+      "total_papers": 100,
+      "journal_name": "Cell"
+    },
+    "Nature Reviews Molecular Cell Biology": {
+      "date_availability": {
+        "received_count": 0,
+        "accepted_count": 45,
+        "published_count": 100,
+        "complete_cycle_count": 0
+      },
+      "review_cycle": {
+        "count": 0,
+        "mean_days": 0,
+        "median_days": 0,
+        "min_days": 0,
+        "max_days": 0,
+        "std_days": 0
+      },
+      "publication_cycle": {
+        "count": 45,
+        "mean_days": 110.4,
+        "median_days": 143,
+        "min_days": 29,
+        "max_days": 185,
+        "std_days": 56.6
+      },
+      "total_cycle": {
+        "count": 0,
+        "mean_days": 0,
+        "median_days": 0,
+        "min_days": 0,
+        "max_days": 0,
+        "std_days": 0
+      },
+      "total_papers": 100,
+      "journal_name": "Nature Reviews Molecular Cell Biology"
+    },
+    "Nature Medicine": {
+      "date_availability": {
+        "received_count": 49,
+        "accepted_count": 49,
+        "published_count": 100,
+        "complete_cycle_count": 48
+      },
+      "review_cycle": {
+        "count": 48,
+        "mean_days": 184.6,
+        "median_days": 177.5,
+        "min_days": 25,
+        "max_days": 357,
+        "std_days": 92.4
+      },
+      "publication_cycle": {
+        "count": 49,
+        "mean_days": 46.2,
+        "median_days": 46,
+        "min_days": 29,
+        "max_days": 77,
+        "std_days": 11.3
+      },
+      "total_cycle": {
+        "count": 48,
+        "mean_days": 230.6,
+        "median_days": 230.5,
+        "min_days": 57,
+        "max_days": 422,
+        "std_days": 98.9
+      },
+      "total_papers": 100,
+      "journal_name": "Nature Medicine"
+    },
+    "Nature Biotechnology": {
+      "date_availability": {
+        "received_count": 29,
+        "accepted_count": 29,
+        "published_count": 100,
+        "complete_cycle_count": 27
+      },
+      "review_cycle": {
+        "count": 20,
+        "mean_days": 221.1,
+        "median_days": 237.5,
+        "min_days": 44,
+        "max_days": 347,
+        "std_days": 94.1
+      },
+      "publication_cycle": {
+        "count": 29,
+        "mean_days": 47.4,
+        "median_days": 41,
+        "min_days": 27,
+        "max_days": 105,
+        "std_days": 18.6
+      },
+      "total_cycle": {
+        "count": 27,
+        "mean_days": 339.9,
+        "median_days": 329,
+        "min_days": 78,
+        "max_days": 682,
+        "std_days": 159.3
+      },
+      "total_papers": 100,
+      "journal_name": "Nature Biotechnology"
+    },
+    "Nature Genetics": {
+      "date_availability": {
+        "received_count": 59,
+        "accepted_count": 59,
+        "published_count": 100,
+        "complete_cycle_count": 56
+      },
+      "review_cycle": {
+        "count": 39,
+        "mean_days": 250.8,
+        "median_days": 266,
+        "min_days": 76,
+        "max_days": 353,
+        "std_days": 75.8
+      },
+      "publication_cycle": {
+        "count": 59,
+        "mean_days": 48.6,
+        "median_days": 47,
+        "min_days": 29,
+        "max_days": 125,
+        "std_days": 14.7
+      },
+      "total_cycle": {
+        "count": 56,
+        "mean_days": 374.5,
+        "median_days": 351.5,
+        "min_days": 125,
+        "max_days": 703,
+        "std_days": 138.7
+      },
+      "total_papers": 100,
+      "journal_name": "Nature Genetics"
+    },
+    "Nature Immunology": {
+      "date_availability": {
+        "received_count": 44,
+        "accepted_count": 44,
+        "published_count": 100,
+        "complete_cycle_count": 40
+      },
+      "review_cycle": {
+        "count": 29,
+        "mean_days": 235.6,
+        "median_days": 248,
+        "min_days": 35,
+        "max_days": 353,
+        "std_days": 85.6
+      },
+      "publication_cycle": {
+        "count": 44,
+        "mean_days": 54.6,
+        "median_days": 50.0,
+        "min_days": 29,
+        "max_days": 137,
+        "std_days": 17.4
+      },
+      "total_cycle": {
+        "count": 40,
+        "mean_days": 344.9,
+        "median_days": 346.5,
+        "min_days": 89,
+        "max_days": 727,
+        "std_days": 121.3
+      },
+      "total_papers": 100,
+      "journal_name": "Nature Immunology"
+    },
+    "Nature Neuroscience": {
+      "date_availability": {
+        "received_count": 67,
+        "accepted_count": 67,
+        "published_count": 100,
+        "complete_cycle_count": 56
+      },
+      "review_cycle": {
+        "count": 22,
+        "mean_days": 288.3,
+        "median_days": 287.5,
+        "min_days": 207,
+        "max_days": 365,
+        "std_days": 53.0
+      },
+      "publication_cycle": {
+        "count": 67,
+        "mean_days": 73.2,
+        "median_days": 74,
+        "min_days": 41,
+        "max_days": 131,
+        "std_days": 16.8
+      },
+      "total_cycle": {
+        "count": 56,
+        "mean_days": 476.6,
+        "median_days": 480.5,
+        "min_days": 267,
+        "max_days": 713,
+        "std_days": 119.5
+      },
+      "total_papers": 100,
+      "journal_name": "Nature Neuroscience"
+    },
+    "Nature Cell Biology": {
+      "date_availability": {
+        "received_count": 55,
+        "accepted_count": 55,
+        "published_count": 100,
+        "complete_cycle_count": 53
+      },
+      "review_cycle": {
+        "count": 32,
+        "mean_days": 254.4,
+        "median_days": 281.5,
+        "min_days": 43,
+        "max_days": 363,
+        "std_days": 87.3
+      },
+      "publication_cycle": {
+        "count": 55,
+        "mean_days": 53.3,
+        "median_days": 51,
+        "min_days": 33,
+        "max_days": 99,
+        "std_days": 13.9
+      },
+      "total_cycle": {
+        "count": 53,
+        "mean_days": 382,
+        "median_days": 388,
+        "min_days": 93,
+        "max_days": 675,
+        "std_days": 121.8
+      },
+      "total_papers": 100,
+      "journal_name": "Nature Cell Biology"
+    },
+    "JAMA": {
+      "date_availability": {
+        "received_count": 0,
+        "accepted_count": 0,
+        "published_count": 100,
+        "complete_cycle_count": 0
+      },
+      "review_cycle": {
+        "count": 0,
+        "mean_days": 0,
+        "median_days": 0,
+        "min_days": 0,
+        "max_days": 0,
+        "std_days": 0
+      },
+      "publication_cycle": {
+        "count": 0,
+        "mean_days": 0,
+        "median_days": 0,
+        "min_days": 0,
+        "max_days": 0,
+        "std_days": 0
+      },
+      "total_cycle": {
+        "count": 0,
+        "mean_days": 0,
+        "median_days": 0,
+        "min_days": 0,
+        "max_days": 0,
+        "std_days": 0
+      },
+      "total_papers": 100,
+      "journal_name": "JAMA"
+    },
+    "Nature Communications": {
+      "date_availability": {
+        "received_count": 98,
+        "accepted_count": 98,
+        "published_count": 100,
+        "complete_cycle_count": 98
+      },
+      "review_cycle": {
+        "count": 82,
+        "mean_days": 216.0,
+        "median_days": 227.0,
+        "min_days": 40,
+        "max_days": 363,
+        "std_days": 77.6
+      },
+      "publication_cycle": {
+        "count": 98,
+        "mean_days": 19.1,
+        "median_days": 16.0,
+        "min_days": 7,
+        "max_days": 74,
+        "std_days": 11.3
+      },
+      "total_cycle": {
+        "count": 98,
+        "mean_days": 275.4,
+        "median_days": 264.0,
+        "min_days": 52,
+        "max_days": 703,
+        "std_days": 120.6
+      },
+      "total_papers": 100,
+      "journal_name": "Nature Communications"
+    }
+  }
+}

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计分析专家 - NNScholar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #10b981;
+            display: none;
+        }
+
+        .result-section h3 {
+            color: #10b981;
+            margin-bottom: 15px;
+        }
+
+        .result-content {
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.close()">← 返回</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📈 统计分析专家</h1>
+            <p>为您的研究设计科学合理的统计分析方法</p>
+        </div>
+        
+        <div class="content">
+            <form id="statisticalAnalysisForm">
+                <div class="form-group">
+                    <label for="researchQuestion">🎯 研究问题 *</label>
+                    <textarea id="researchQuestion" required 
+                              placeholder="请详细描述您的研究问题，例如：探讨某种治疗方法对患者康复效果的影响"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="studyDesign">📊 研究设计类型</label>
+                    <select id="studyDesign">
+                        <option value="">请选择研究设计类型</option>
+                        <option value="experimental">实验研究</option>
+                        <option value="observational">观察性研究</option>
+                        <option value="cross-sectional">横断面研究</option>
+                        <option value="cohort">队列研究</option>
+                        <option value="case-control">病例对照研究</option>
+                        <option value="meta-analysis">Meta分析</option>
+                        <option value="systematic-review">系统综述</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>🔢 数据类型</label>
+                    <div class="checkbox-grid">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="continuous" value="continuous">
+                            <label for="continuous">连续变量</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="categorical" value="categorical">
+                            <label for="categorical">分类变量</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ordinal" value="ordinal">
+                            <label for="ordinal">有序变量</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="timeSeries" value="time-series">
+                            <label for="timeSeries">时间序列</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>👥 样本信息</label>
+                    <div class="input-grid">
+                        <input type="number" id="sampleSize" placeholder="样本量">
+                        <select id="groupNumber">
+                            <option value="">组别数量</option>
+                            <option value="1">单组</option>
+                            <option value="2">两组</option>
+                            <option value="3">三组</option>
+                            <option value="multiple">多组</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="additionalRequirements">📝 其他要求</label>
+                    <textarea id="additionalRequirements" 
+                              placeholder="请描述其他特殊要求，如特定的统计软件、显著性水平等（可选）"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    🚀 获取统计分析建议
+                </button>
+            </form>
+
+            <div class="result-section" id="resultSection">
+                <h3>📊 分析结果</h3>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('statisticalAnalysisForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const resultSection = document.getElementById('resultSection');
+            const resultContent = document.getElementById('resultContent');
+            
+            // 获取表单数据
+            const formData = {
+                researchQuestion: document.getElementById('researchQuestion').value,
+                studyDesign: document.getElementById('studyDesign').value,
+                dataTypes: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value),
+                sampleSize: document.getElementById('sampleSize').value,
+                groupNumber: document.getElementById('groupNumber').value,
+                additionalRequirements: document.getElementById('additionalRequirements').value
+            };
+            
+            if (!formData.researchQuestion.trim()) {
+                alert('请填写研究问题');
+                return;
+            }
+            
+            // 显示加载状态
+            submitBtn.disabled = true;
+            submitBtn.textContent = '🔄 分析中...';
+            resultSection.style.display = 'block';
+            resultContent.innerHTML = '<div class="loading">🔄 统计分析专家正在为您分析，请稍候...</div>';
+            
+            try {
+                // 构建专业提示词
+                const prompt = `作为统计分析专家，请为以下研究提供科学合理的统计分析建议：
+
+研究问题：${formData.researchQuestion}
+研究设计：${formData.studyDesign || '未指定'}
+数据类型：${formData.dataTypes.join(', ') || '未指定'}
+样本量：${formData.sampleSize || '未指定'}
+组别数量：${formData.groupNumber || '未指定'}
+其他要求：${formData.additionalRequirements || '无'}
+
+请提供以下内容：
+1. 推荐的统计方法及其理由
+2. 数据预处理建议
+3. 假设检验的选择
+4. 效应量计算建议
+5. 多重比较校正（如适用）
+6. 统计软件推荐
+7. 结果解释要点
+8. 可能的局限性和注意事项
+
+请确保建议科学严谨，符合统计学原理。`;
+                
+                // 发送请求
+                const response = await fetch('/api/deepseek_analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        expert_type: '统计分析专家'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 格式化显示结果
+                    const formattedResult = data.analysis.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    resultContent.innerHTML = formattedResult;
+                } else {
+                    resultContent.innerHTML = `<div style="color: #ef4444;">❌ 分析失败: ${data.error}</div>`;
+                }
+            } catch (error) {
+                console.error('分析错误:', error);
+                resultContent.innerHTML = `<div style="color: #ef4444;">❌ 分析过程中出现错误: ${error.message}</div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 获取统计分析建议';
+            }
+        });
+    </script>
+</body>
+</html>

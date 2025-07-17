@@ -1,0 +1,10 @@
+期刊名称,样本大小,分析文献数,有审稿数据,数据完整率(%),平均审稿周期(天),中位数(天),最短(天),最长(天),标准差(天),平均发表延迟(天),平均总周期(天),分析线程
+Cell Stem Cell,50,50,50,100.0,231.5,200.5,31,573,137.8,29.9,261.4,ThreadPoolExecutor-0_7
+eLife,50,50,2,4.0,218,218.0,218,218,0.0,13,231,ThreadPoolExecutor-0_6
+Neuron,50,50,48,96.0,217.5,221.0,8,667,128.6,30.5,248,ThreadPoolExecutor-0_3
+The Lancet Neurology,50,50,48,96.0,132.6,104.5,5,402,91.0,61.2,193.8,ThreadPoolExecutor-0_8
+Blood,50,50,46,92.0,129.6,104.0,43,382,78.8,23.4,153.0,ThreadPoolExecutor-0_0
+Nature Structural & Molecular Biology,50,50,34,68.0,276.3,275.0,4,574,130.7,44.7,334.2,ThreadPoolExecutor-0_2
+Nature Cell Biology,50,50,47,94.0,277.1,304,59,557,134.4,41.6,319.0,ThreadPoolExecutor-0_9
+Genome Research,50,50,40,80.0,217.4,203.5,47,365,74.8,30.4,247.9,ThreadPoolExecutor-0_7
+Genome Biology,50,50,50,100.0,310.2,280.5,98,622,142.8,19.3,329.5,ThreadPoolExecutor-0_4

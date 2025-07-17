@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(cp:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(python3:*)",
+      "Bash(python test:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(timeout 30 python3 app.py)",
+      "Bash(timeout 15 python3 app.py)",
+      "Bash(sed:*)",
+      "Bash(timeout:*)",
+      "Bash(touch:*)",
+      "Bash(pkill:*)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(kill:*)",
+      "Bash(ss:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "Bash(git restore:*)",
+      "Bash(git checkout:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(pip show:*)",
+      "Bash(PORT=5001 python3 app.py)",
+      "Bash(PORT=5002 python3 app.py)",
+      "Bash(PORT=5003 python3 app.py)",
+      "Bash(cat:*)",
+      "Bash(FLASK_PORT=5001 python3 app.py)",
+      "Bash(true)"
+    ],
+    "deny": []
+  }
+}
